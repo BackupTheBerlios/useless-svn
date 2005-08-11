@@ -6,21 +6,24 @@ This is the homepage of useless_.
 Dependencies
 --------------------
 
-fill in later
+useless is split into multiple packages, each dependent on different packages.
+
 
 -----------------------------
 
 Intended Audience/Users
 ----------------------------------
 
-fill in later
+Python developers who use Postgresql.
 
 ----------------------
 
 Download
 --------------
 
-Currently the best way to obtain useless is through subversion.  
+Currently the best way to obtain useless is through subversion.
+
+svn_ access (This will work in konqueror.)
 
 ------------------
 
@@ -34,6 +37,10 @@ project_ page
 Documentation
 ---------------------
 
+The only documentation available so far, is in the code.  After installing,
+run pydoc -g to browse the api documentation.
+
+
 
 The project_ is hosted by |berlios|.
 
@@ -45,3 +52,4 @@ The project_ is hosted by |berlios|.
 .. _project: http://developer.berlios.de/projects/useless
 .. _debian: http://debian.org
 .. _useless: http://useless.berlios.de
+.. _svn: svn://svn.berlios.de/useless
