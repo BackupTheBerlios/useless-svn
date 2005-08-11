@@ -1,0 +1,47 @@
+Useless_
+===========
+
+This is the homepage of useless_.
+
+Dependencies
+--------------------
+
+fill in later
+
+-----------------------------
+
+Intended Audience/Users
+----------------------------------
+
+fill in later
+
+----------------------
+
+Download
+--------------
+
+Currently the best way to obtain useless is through subversion.  
+
+------------------
+
+Project
+----------
+
+project_ page
+
+-----------------------
+
+Documentation
+---------------------
+
+
+The project_ is hosted by |berlios|.
+
+
+.. |berlios| image:: http://developer.berlios.de/bslogo.php?group_id=0&type=1
+   :target: http://developer.berlios.de
+
+.. _paella: http://paella.berlios.de
+.. _project: http://developer.berlios.de/projects/useless
+.. _debian: http://debian.org
+.. _useless: http://useless.berlios.de
