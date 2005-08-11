@@ -21,9 +21,16 @@ Python developers who use Postgresql.
 Download
 --------------
 
-Currently the best way to obtain useless is through subversion.
+Currently the best way to obtain useless is through subversion::
+
+	  svn checkout svn://svn.berlios.de/useless/trunk useless
+
 
 svn_ access (This will work in konqueror.)
+
+There is also a tarball_ of the source available, thought it might be 
+out of date.  Useless doesn't change too much, and the api is pretty stable,
+although probably badly named.
 
 ------------------
 
@@ -53,3 +60,4 @@ The project_ is hosted by |berlios|.
 .. _debian: http://debian.org
 .. _useless: http://useless.berlios.de
 .. _svn: svn://svn.berlios.de/useless
+.. _tarball: http://download.berlios.de/useless/useless_0.1.3.tar.gz
