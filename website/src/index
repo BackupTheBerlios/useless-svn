@@ -3,6 +3,28 @@ Useless_
 
 This is the homepage of useless_.
 
+
+Overview of packages
+---------------------
+- **base** - basic modules, most useless packages depend on this one
+- **db** - database modules, these are for both postgresql and sqlite, depends on 
+  sqlgen package
+- **debian** - some debian specific modules to help when developing on a debian system
+- **gtk** - GTK+ widgets useing pygtk, this package is no longer being maintained and 
+  will be dropped eventually
+- **kbase** - basic pykde widgets, this section will go through a major overhaul soon
+- **kdb** - pykde widgets for use with sql databases, this package needs to be overhauled
+- **sqlgen** - this is probably the best of the useless packages, a pythonic way of 
+  handling sql statements.  This package is not feature complete, but it is very useful.
+- **webframe** - this package is used to help build websites using cherrypy and 
+  forgetHTML.  A modified copy of forgetHTML a modified copy of forgetHTML is available 
+  in the package.
+- **xmlgen** - this package was uses xml.dom.minidom to help generate xml files.  It 
+  was used to generate simple HTML before I found forgetHTML.  This package may either 
+  expanded or moved to the base package.  The HTML parts will definitely be removed.
+
+
+
 Dependencies
 --------------------
 

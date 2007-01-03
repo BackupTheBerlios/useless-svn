@@ -294,6 +294,27 @@ ul.auto-toc {
 <h1 class="title"><a class="reference" href="http://useless.berlios.de">Useless</a></h1>
 <p>This is the homepage of <a class="reference" href="http://useless.berlios.de">useless</a>.</p>
 <div class="section">
+<h1><a id="overview-of-packages" name="overview-of-packages">Overview of packages</a></h1>
+<ul class="simple">
+<li><strong>base</strong> - basic modules, most useless packages depend on this one</li>
+<li><strong>db</strong> - database modules, these are for both postgresql and sqlite, depends on
+sqlgen package</li>
+<li><strong>debian</strong> - some debian specific modules to help when developing on a debian system</li>
+<li><strong>gtk</strong> - GTK+ widgets useing pygtk, this package is no longer being maintained and
+will be dropped eventually</li>
+<li><strong>kbase</strong> - basic pykde widgets, this section will go through a major overhaul soon</li>
+<li><strong>kdb</strong> - pykde widgets for use with sql databases, this package needs to be overhauled</li>
+<li><strong>sqlgen</strong> - this is probably the best of the useless packages, a pythonic way of
+handling sql statements.  This package is not feature complete, but it is very useful.</li>
+<li><strong>webframe</strong> - this package is used to help build websites using cherrypy and
+forgetHTML.  A modified copy of forgetHTML a modified copy of forgetHTML is available
+in the package.</li>
+<li><strong>xmlgen</strong> - this package was uses xml.dom.minidom to help generate xml files.  It
+was used to generate simple HTML before I found forgetHTML.  This package may either
+expanded or moved to the base package.  The HTML parts will definitely be removed.</li>
+</ul>
+</div>
+<div class="section">
 <h1><a id="dependencies" name="dependencies">Dependencies</a></h1>
 <p>useless is split into multiple packages, each dependent on different packages.</p>
 </div>
