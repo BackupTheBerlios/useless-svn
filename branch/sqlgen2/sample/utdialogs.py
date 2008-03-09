@@ -150,7 +150,8 @@ class BaseGuestDataFrame(QFrame):
 
         self.desc_lbl = QLabel('Description', self)
         self.desc_entry = KTextEdit(self, 'description_entry')
-
+        self.desc_entry.setTextFormat(self.PlainText)
+        
         self.grid.addMultiCellWidget(self.desc_lbl, 4, 4, 0, 1)
         self.grid.addMultiCellWidget(self.desc_entry, 5, 7, 0, 1)
 
@@ -165,7 +166,7 @@ class BaseGuestDataFrame(QFrame):
         desc = str(self.desc_entry.text())
         # take the newlines out for now
         # until the sqlgen is fixed to work with sqlite
-        desc = desc.replace('\n', ' ')
+        #desc = desc.replace('\n', ' ')
         data = dict(firstname=fname, lastname=lname,
                     description=desc, title=title)
         if self.guestid is not None:

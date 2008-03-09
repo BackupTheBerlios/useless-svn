@@ -15,6 +15,10 @@ def unescape_text(text):
     return text.replace(ESCAPED_ENDL, '\n')
 
 class Connection(LocalConnection):
+    def __init__(self, dbname='test.db', autocommit=1, encoding='utf-8'):
+        LocalConnection.__init__(self, dbname=dbname, autocommit=autocommit,
+                                 encoding=encoding)
+        
     def stmtcursor(self):
         return StatementCursor(self)
 
@@ -53,7 +57,7 @@ class Guests(object):
 
     def get_guest_rows(self):
         cursor = self.conn.stmtcursor()
-        return cursor.select(table='guests')
+        return cursor.select(table='guests', order='guestid')
 
     ######################
     # works methods      #

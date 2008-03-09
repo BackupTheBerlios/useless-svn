@@ -9,6 +9,7 @@ from useless.base.forgethtml import TableRow, TableCell
 from useless.base.forgethtml import TableHeader, Header
 from useless.base.forgethtml import Image, Paragraph, Break
 from useless.base.forgethtml import Inline, Ruler, Image, Span
+from useless.base.forgethtml import Text
 
 from utbase import parse_wtprn_m3u_url
 from utbase import make_2hr_wtprn_mp3_urls
@@ -88,7 +89,10 @@ class GuestTable(BaseMainTable):
         desc = data['description']
         if desc:
             desc = self.app.guests.unescape_text(desc)
-            span = Span(desc)
+            text  = Text(desc)
+            text.set_rawtext(True)
+            #print text._content
+            span = Span(text)
             cell = TableCell(span, colspan=2)
             if len(desc) > 150:
                 span['style'] = 'font-size: x-small'
