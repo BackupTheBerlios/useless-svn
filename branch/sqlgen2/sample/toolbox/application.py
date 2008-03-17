@@ -2,7 +2,8 @@ import os
 import traceback
 from StringIO import StringIO
 
-from qt import SIGNAL, SLOT
+from qt import SIGNAL, SLOT, PYSIGNAL
+from qt import QTimer
 
 from kdecore import KAboutData
 from kdecore import KApplication
@@ -11,9 +12,15 @@ from kdecore import KStandardDirs
 from kdeui import KAboutDialog
 from kdeui import KMessageBox
 
+from dcopexport import DCOPExObj
+
 from dblite import Connection, EntityManager
+from urlhandler import MainUrlHandler
 
-
+class ToolBoxDCOPInterface(DCOPExObj):
+    def __init__(self, id='toolbox-handler'):
+        DCOPExObj.__init__(self, id)
+        
 # about this program
 class AboutData(KAboutData):
     def __init__(self):
@@ -39,6 +46,7 @@ class MainApplication(KApplication):
         KApplication.__init__(self)
         # in case something needs done before quitting
         self.connect(self, SIGNAL('aboutToQuit()'), self.quit)
+        self.dcop = ToolBoxDCOPInterface()
         self._setup_standard_directories()
         #self._generate_data_directories()
         dbfile = os.path.join(self.datadir, 'main.db')
@@ -46,7 +54,15 @@ class MainApplication(KApplication):
                                encoding='ascii')
         #self.guests = Guests(self.conn)
         self.db = EntityManager(self.conn)
-        
+
+        self.urlhandler = MainUrlHandler(self.db)
+        # setup the timer to handle background jobs
+        self.timer = QTimer()
+        # every five seconds
+        self.timer.changeInterval(1000)
+        self.connect(self.timer, SIGNAL('timeout()'), self._timer_done)
+
+        self.main_window = None
         
         
     # this method sets up the directories used by the application
@@ -74,7 +90,18 @@ class MainApplication(KApplication):
         # house cleaning chores go here
         KApplication.quit(self)
 
-
+    def _timer_done(self):
+        self.urlhandler.scan_jobs()
+        if self.urlhandler.completed_jobs():
+            self.urlhandler.handle_completed_jobs()
+            self.emit(PYSIGNAL('UrlHandled'),(True,))
+        jobs = self.urlhandler.jobs
+        if jobs:
+            self.main_window.label.setText('toolbox: %d jobs running' % len(jobs))
+        else:
+            self.main_window.label.setText('toolbox')
+            
+        
 if __name__ == '__main__':
     print "testing module"
     

@@ -23,31 +23,66 @@ class AutoId(Column):
         col += ' INTEGER AUTOINCREMENT'
         return col
 
+class EntityTypeTable(Table):
+    def __init__(self):
+        etype = PkName('type')
+        desc = Text('desc')
+        Table.__init__(self, 'entity_types', [etype, desc])
+        
 class EntityTable(Table):
     def __init__(self):
         idcol = AutoId('entityid')
+        # etype should be foreign key to EntityTypeTable
         etype = Name('type')
         name = Bigname('name')
         url = Text('url')
         desc = Text('desc')
         cols = [idcol, etype, name, url, desc]
         Table.__init__(self, 'entities', cols)
-        
+
 class TagNameTable(Table):
     def __init__(self):
         name = PkBigname('tagname')
         Table.__init__(self, 'tagnames', [name])
 
-class EntityTags(Table):
+class EntityTagsTable(Table):
     def __init__(self):
-        entityid = Num('entityid')
-        tagname = Bigname('tagname')
+        # entityid is foreign key to EntityTable
+        entityid = PkNum('entityid')
+        # tagname is foreign key to TagNameTable
+        tagname = PkBigname('tagname')
         Table.__init__(self, 'entitytags', [entityid, tagname])
 
+class ExtraFieldsTable(Table):
+    def __init__(self):
+        fieldname = PkBigname('fieldname')
+        Table.__init__(self, 'extfields', [fieldname])
+
+class EntityTypeExtraFieldsTable(Table):
+    def __init__(self):
+        # etype is foreign key to EntityTypeTable
+        etype = PkName('type')
+        # fieldname is foreign key to ExtraFieldsTable
+        fieldname = PkBigname('fieldname')
+        Table.__init__(self, 'entity_type_extfields', [etype, fieldname])
+        
+class EntityExtraFieldsTable(Table):
+    def __init__(self):
+        entityid = PkNum('entityid')
+        fieldname = PkBigname('fieldname')
+        value = Text('value')
+        cols = [entityid, fieldname, value]
+        Table.__init__(self, 'entity_extfields', cols)
+        
 def generate_schema(cursor):
-    tables = [EntityTable,
+    tables = [EntityTypeTable,
+              EntityTable,
               TagNameTable,
-              EntityTags]
+              EntityTagsTable,
+              ExtraFieldsTable,
+              EntityTypeExtraFieldsTable,
+              EntityExtraFieldsTable
+              ]
     for table in tables:
         cursor.create_table(table())
         

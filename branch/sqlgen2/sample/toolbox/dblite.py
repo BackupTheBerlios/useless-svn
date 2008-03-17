@@ -35,12 +35,42 @@ class EntityManager(object):
         data = dict(name=name, type=etype)
         self.cursor.insert(table='entities', data=data)
 
+    def create_entity_type(self, etype):
+        self.cursor.insert(table='entity_types', data=dict(type=etype))
+
+    def create_extra_field(self, etype, fieldname):
+        data = dict(type=etype, fieldname=fieldname)
+        self.cursor.insert(table='entity_type_extfields', data=data)
+
+    def get_extra_fields(self, etype):
+        clause = Eq('type', etype)
+        rows = self.cursor.select(table='entity_type_extfields', clause=clause)
+        return [row.type for row in rows]
+    
     def create_entity(self, data):
         name = data['name']
         clause = Eq('name', name)
         rows = self.cursor.select(fields=['name'], table='entities', clause=clause)
         if not rows:
-            self.cursor.insert(table='entities', data=data)
+            # this needs to be a default in sqlite
+            if not data.has_key('type'):
+                data['type'] = 'generic'
+            efields = ['name', 'type', 'url', 'desc']
+            edata = {}
+            for field in efields:
+                if data.has_key(field):
+                    edata[field] = data[field]
+            self.cursor.insert(table='entities', data=edata)
+            entityid = self.get_id(edata['name'])
+            etype = data['type']
+            extfields = self.get_extra_fields(etype)
+            if extfields:
+                extdata = dict(entityid=entityid)
+                table = 'entity_extfields'
+                for field in extfields:
+                    extdata['fieldname'] = field
+                    extdata['value'] = data[field]
+                    self.cursor.insert(table=table, data=extdata)
         else:
             raise EntityExistsError, 'Entity %s already exists.' % name
         

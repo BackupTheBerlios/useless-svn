@@ -13,7 +13,7 @@ class BaseDropCatcher(object):
     def dragEnterEvent(self, event):
         event.accept(QUriDrag.canDecode(event))
 
-    def _droplist(self, event):
+    def _handle_drop_event(self, event):
         qlist = QStringList()
         if QUriDrag.decodeToUnicodeUris(event, qlist):
             return qlist
@@ -26,11 +26,13 @@ class BaseDropCatcher(object):
 
 class MainDropCatcher(BaseDropCatcher):
     def dropEvent(self, event):
-        qlist = self._droplist(event)
+        qlist = self._handle_drop_event(event)
         if qlist is not None:
             if len(qlist) == 1:
-                url = qlist[0]
-                print type(url), url
+                url = str(qlist[0])
+                self.app.urlhandler.handle(url)
+                
+                
                 
 class Url(object):
     def __init__(self, url):

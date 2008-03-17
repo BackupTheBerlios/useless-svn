@@ -8,8 +8,8 @@ from kdeui import KStdAction
 from kdeui import KPopupMenu
 
 from useless.kdebase.actions import BaseItem, BaseAction
+from useless.kdebase.mainwin import BaseMainWindow
 
-from base import get_application_pointer
 from infopart import InfoPart
 #from dialogs import BaseEntityDialog
 from dialogs import MainEntityDialog
@@ -24,14 +24,18 @@ class NewTagAction(BaseAction):
         BaseAction.__init__(self, NewTagItem(), slot, parent, name='NewTagAction')
 
 
-class MainEntityWindow(KMainWindow):
-    def __init__(self, parent):
+class MainEntityWindow(BaseMainWindow):
+    def __init__(self, parent, name='MainEntityWindow'):
+        BaseMainWindow.__init__(self, parent, name=name)
         KMainWindow.__init__(self, parent, 'Uncover Truth Frontend')
-        self.app = get_application_pointer()
         self.main_toolbox_window = parent
         self.splitView = QSplitter(self, 'splitView')
         self.listView = KListView(self.splitView, 'entities_view')
         self.textView = InfoPart(self.splitView)
+        self.initActions()
+        self.initMenus()
+        self.initToolbar()
+        
         #self._sortby = 'name'
         self.initlistView()
 
@@ -41,15 +45,22 @@ class MainEntityWindow(KMainWindow):
                      PYSIGNAL('EntityInfoUpdated'), self.refreshDisplay)
         self.setCentralWidget(self.splitView)
 
+        # dialogs
+        self._new_entity_dlg = None
+        
+        # resize window
+        self.resize(400, 500)
+        self.splitView.setSizes([75, 325])
+
+    def initActions(self):
         collection = self.actionCollection()
-        #self.quitAction = KStdAction.quit(self.close, collection)
-        self.quitAction = KStdAction.quit(self.main_toolbox_window.systray.toggleActive,
-                                          collection)
+        self.quitAction = KStdAction.quit(self.close, collection)
         self.newEntityAction = KStdAction.openNew(self.slotNewEntity, collection)
         self.selectAllAction = KStdAction.selectAll(self.slotSelectAll,
                                                     collection)
         self.newTagAction = NewTagAction(self.slotNewTag, collection)
-        
+
+    def initMenus(self):
         mainmenu = KPopupMenu(self)
         self.newEntityAction.plug(mainmenu)
         self.newTagAction.plug(mainmenu)
@@ -58,18 +69,11 @@ class MainEntityWindow(KMainWindow):
         menubar = self.menuBar()
         menubar.insertItem('&Main', mainmenu)
 
+    def initToolbar(self):
         toolbar = self.toolBar()
         self.newEntityAction.plug(toolbar)
         self.newTagAction.plug(toolbar)
         self.quitAction.plug(toolbar)
-
-        # dialogs
-        self._new_entity_dlg = None
-        
-        # resize window
-        self.resize(400, 500)
-        self.splitView.setSizes([75, 325])
-
 
     def initlistView(self):
         self.listView.addColumn('entity', -1)
