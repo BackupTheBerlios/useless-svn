@@ -13,6 +13,14 @@ class Process(subprocess.Popen):
 class UnhandledUrlError(ValueError):
     pass
 
+# raise this error for urls that don't need
+# to be handled anymore
+class AlreadyHandledError(ValueError):
+    pass
+
+class UnknownProtocolError(KeyError):
+    pass
+
 class BaseProcessHandler(object):
     def __init__(self):
         self.jobs = []
@@ -53,8 +61,11 @@ class BaseUrlHandler(BaseProcessHandler):
         
     def handle(self, url):
         url = Url(url)
-        self._protocol_handlers[url.protocol](url)
-
+        if url.protocol in self._protocol_handlers:
+            self._protocol_handlers[url.protocol](url)
+        else:
+            raise UnknownProtocolError, 'Unknown protocol: %s' % url.protocol
+        
     def handle_file_protocol(self, url):
         raise NotImplementedError, "don't call handle_file_protocol in base class"
             
@@ -83,6 +94,7 @@ class BaseUrlHandler(BaseProcessHandler):
 
 
 class MainUrlHandler(BaseUrlHandler):
+    UnknownProtocolError = UnknownProtocolError
     def __init__(self, db):
         BaseUrlHandler.__init__(self)
         self.db = db
@@ -101,14 +113,17 @@ class MainUrlHandler(BaseUrlHandler):
     
     def handle_youtube_url(self, url):
         match = youtube_url_re.match(url)
-        youtube_id = match.group(2)
-        # here is where we need to check the database for this id
-        print 'handle_youtube_url', url
-        job = Process(('youtube-dl', '-g', '-2', str(url)), stdout=subprocess.PIPE)
-        job.jobtype = 'youtube-dl'
-        job.handled_url = url
-        self.jobs.append(job)
-
+        youtubeid = match.group(2)
+        if not self.db.extvalue_exists('youtubeid', youtubeid):
+            print 'handle_youtube_url', url
+            job = Process(('youtube-dl', '-g', '-2', str(url)), stdout=subprocess.PIPE)
+            job.jobtype = 'youtube-dl'
+            job.handled_url = url
+            job.youtubeid = youtubeid
+            self.jobs.append(job)
+        else:
+            print "already have %s" % youtubeid
+            
     def handle_job(self, job):
         if job.jobtype == 'youtube-dl':
             self.handle_youtubedl_job(job)
@@ -119,9 +134,9 @@ class MainUrlHandler(BaseUrlHandler):
     def handle_youtubedl_job(self, job):
         if job.returncode == 0:
             title, flv_url, ignore = job.stdout.read().split('\n')
-            self._handled_urls[job.handled_url] = dict(title=title,
-                                                       flv_url=flv_url, jobtype=job.jobtype)
-            
+            data = dict(title=title, flv_url=flv_url, jobtype=job.jobtype,
+                        youtubeid=job.youtubeid)
+            self._handled_urls[job.handled_url] = data            
         else:
             raise OSError, 'job returned %d' % job.returncode
 

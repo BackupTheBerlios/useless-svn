@@ -19,8 +19,8 @@ class BaseEntityDataFrame(QFrame):
         self.entityid = None
         numrows = 2
         numcols = 1
-        margin = 0
-        space = 1
+        margin = 3
+        space = 2
         self.grid = QGridLayout(self, numrows, numcols,
                                 margin, space, 'BaseEntityDataLayout')
         self.app = get_application_pointer()
@@ -54,6 +54,7 @@ class BaseEntityDataFrame(QFrame):
 
         #self.works_frame = BaseGuestWorksFrame(self)
         #self.grid.addMultiCellWidget(self.works_frame, 8, 8, 0, 1)
+
 
     def get_data(self):
         name = str(self.name_entry.text())
@@ -145,19 +146,7 @@ class AddTagsDialog(BaseTagsDialog):
         sql += 'entitytags where entityid=%d)' % self.entityid
         self.app.db.cursor.execute(sql)
         rows = self.app.db.cursor.fetchall()
-        print rows, len(rows)
-        
-        #alltags = self.app.db.get_all_tags()
-        #print 'alltags', alltags
-        #current_tags = self.app.db.get_tags(self.entityid)
-        #print 'current_tags', current_tags
-        #avail_tags = [tag for tag in alltags if tag not in current_tags]
-        #print 'avail_tags', avail_tags
-        #for tag in avail_tags:
-        #    pass
-
         tags = [row.tagname for row in rows]
-        #tags = avail_tags
         for tagname in tags:
             print 'adding', tagname, 'to list'
             KListViewItem(self.frame.listView, tagname)
@@ -185,7 +174,7 @@ class RemoveTagsDialog(BaseTagsDialog):
             self.app.db.delete_tag(tagname, self.entityid)
             
             
-class NewTagDialog(BaseDialogWindow):
+class NewTagDialogOrig(BaseDialogWindow):
     def __init__(self, parent, name='NewTagDialog'):
         BaseDialogWindow.__init__(self, parent, name=name)
         self.frame = QFrame(self)
@@ -203,6 +192,25 @@ class NewTagDialog(BaseDialogWindow):
         self.setMainWidget(self.frame)
         
         self.connect(self, SIGNAL('okClicked()'),  self.create_new_tag)
+
+    def create_new_tag(self):
+        tagname = str(self.entry.text())
+        self.app.db.create_tag(tagname)
+
+
+
+########################
+from useless.kdebase.dialogs import VboxDialog
+class NewTagDialog(VboxDialog):
+    def __init__(self, parent, name='NewTagDialog'):
+        VboxDialog.__init__(self, parent, name=name)
+        self.label = QLabel('Enter new tag name', self.frame)
+        self.entry = KLineEdit(self.frame, '')
+        self.vbox.setMargin(3)
+        self.vbox.setSpacing(2)
+        self.vbox.addWidget(self.label)
+        self.vbox.addWidget(self.entry)
+        self.connect(self, SIGNAL('okClicked()'), self.create_new_tag)
 
     def create_new_tag(self):
         tagname = str(self.entry.text())

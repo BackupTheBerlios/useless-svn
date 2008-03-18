@@ -6,28 +6,16 @@ from kdeui import KMessageBox
 from kdeui import KStdAction
 from kdeui import KPopupMenu
 
-from useless.kdebase.actions import BaseItem, BaseAction
-from useless.kdebase.mainwin import BaseMainWindow
+from windows import BaseToolboxWindow
 
 from infopart import InfoPart
 #from dialogs import BaseEntityDialog
 from dialogs import MainEntityDialog
 from dialogs import NewTagDialog
 
-class NewTagItem(BaseItem):
-    def __init__(self):
-        BaseItem.__init__(self, 'New Tag', 'add', 'Create a new tag', 'Create a new tag')
-
-class NewTagAction(BaseAction):
-    def __init__(self, slot, parent):
-        BaseAction.__init__(self, NewTagItem(), slot, parent, name='NewTagAction')
-
-
-class BaseRadioWindow(BaseMainWindow):
+class BaseRadioWindow(BaseToolboxWindow):
     def __init__(self, parent, name='BaseMainWindow'):
-        BaseMainWindow.__init__(self, parent, name=name)
-        self.main_toolbox_window = parent
-
+        BaseToolboxWindow.__init__(self, parent, name=name)
         self.initActions()
         self.initMenus()
         self.initToolbar()

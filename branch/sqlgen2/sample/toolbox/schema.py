@@ -2,7 +2,7 @@ from useless.sqlgen.classes import Table, Column, ColumnType
 from useless.sqlgen.defaults import Text, Name, Bigname
 from useless.sqlgen.defaults import PkNum, Num, NUM
 from useless.sqlgen.defaults import DateTime
-from useless.sqlgen.defaults import PkBigname
+from useless.sqlgen.defaults import PkBigname, PkName
 
 
 DATE = ColumnType('date')

@@ -1,7 +1,7 @@
 from qt import QWidget
 from qt import PYSIGNAL, SIGNAL
 
-#from kdecore import KURL
+from kdecore import KURL
 from kdeui import KMessageBox
 from khtml import KHTMLPart
 #from kfile import KFileDialog

@@ -10,12 +10,14 @@ from kdeui import KStdAction
 from kdeui import KPopupMenu
 
 from useless.kdebase.actions import BaseItem, BaseAction
+from useless.kdebase.mainwin import BaseMainWindow
 
 from base import get_application_pointer
 from infopart import InfoPart
-#from dialogs import BaseEntityDialog
-from dialogs import MainEntityDialog
-from dialogs import NewTagDialog
+
+from actions import NewEntityWindowAction, NewRadioWindowAction
+
+
 from entitywin import MainEntityWindow
 from radiowin import BaseRadioWindow
 from dropcatcher import MainDropCatcher
@@ -24,73 +26,76 @@ from dropcatcher import MainDropCatcher
 from kdecore import KIcon, KIconLoader
 from kdeui import KSystemTray
 
-class NewTagItem(BaseItem):
-    def __init__(self):
-        BaseItem.__init__(self, 'New Tag', 'add', 'Create a new tag', 'Create a new tag')
-
-class NewTagAction(BaseAction):
-    def __init__(self, slot, parent):
-        BaseAction.__init__(self, NewTagItem(), slot, parent, name='NewTagAction')
-
 class MySytemTray(KSystemTray):
     def __init__(self, parent):
         KSystemTray.__init__(self, parent)
         self.mainwin = parent
         icons = KIconLoader()
         self.setPixmap(icons.loadIcon('edit', KIcon.Desktop, 22))
-        collection = self.actionCollection()
-        menu = self.contextMenu()
-        menu.insertItem('Entity Window')
-        menu.insertItem('Radio Window')
-        self.connect(menu, SIGNAL('activated(int)'), self.item_activated)
-        self._child_windows = dict()
 
-    def item_activated(self, index):
-        text = self.contextMenu().text(index)
-        print 'item_activated', text
-        if text == 'Entity Window':
-            count = 1
-            name = 'MainEntityWindow-%d' % count
-            while self._child_windows.has_key(name):
-                count += 1
-                name = 'MainEntityWindow-%d' % count
-            win = MainEntityWindow(self.mainwin, name=name)
-            win.show()
-            self._child_windows[name] = win
-        elif text == 'Radio Window':
-            count = 1
-            name = 'BaseRadioWindow-%d' % count
-            while self._child_windows.has_key(name):
-                count += 1
-                name = 'BaseRadioWindow-%d' % count
-            win = BaseRadioWindow(self.mainwin, name=name)
-            win.show()
-            self._child_windows[name] = win
-            
-        
-class MainWindow(KMainWindow, MainDropCatcher):
+class MainWindow(BaseMainWindow, MainDropCatcher):
     def __init__(self, parent):
-        KMainWindow.__init__(self, parent, 'Uncover Truth Frontend')
-        self.app = get_application_pointer()
+        BaseMainWindow.__init__(self, parent, 'ToolboxMainWindow')
         self.label = QLabel('toobox', self)
         self.setCentralWidget(self.label)
         self.app.main_window = self
+        self.initActions()
+        self.initMenus()
+        self.initToolbar()
+        
         self.systray = MySytemTray(self)
+        systray_menu = self.systray.contextMenu()
+        self.newEntityWindowAction.plug(systray_menu)
+        self.newRadioWindowAction.plug(systray_menu)
+        
         self.setAcceptDrops(True)
         
-        collection = self.actionCollection()
-        self.quitAction = KStdAction.quit(self.systray.toggleActive, collection)
+            
+        self.connect(self.app,
+                     PYSIGNAL('UrlHandled'), self.url_handled)
+        #self.connect(self, SIGNAL('quit()'), self.hide)
+        self._child_windows = dict()
         
+
+    def initActions(self):
+        collection = self.actionCollection()
+        self.quitAction = KStdAction.quit(self.hide, collection)
+        self.newEntityWindowAction = NewEntityWindowAction(self.slotNewEntityWindow,
+                                                            collection)
+        self.newRadioWindowAction = NewRadioWindowAction(self.slotNewRadioWindow,
+                                                         collection)
+
+    def initMenus(self):
         mainmenu = KPopupMenu(self)
+        self.newEntityWindowAction.plug(mainmenu)
+        self.newRadioWindowAction.plug(mainmenu)
         self.quitAction.plug(mainmenu)
         menubar = self.menuBar()
         menubar.insertItem('&Main', mainmenu)
 
+    def initToolbar(self):
         toolbar = self.toolBar()
+        self.newEntityWindowAction.plug(toolbar)
+        self.newRadioWindowAction.plug(toolbar)
         self.quitAction.plug(toolbar)
 
-        self.connect(self.app,
-                     PYSIGNAL('UrlHandled'), self.url_handled)
+    def _slotNewWindow(self, winclass):
+        count = 1
+        name = '%s-%d' % (winclass.__name__, count)
+        while self._child_windows.has_key(name):
+            count += 1
+            name = '%s-%d' % (winclass.__name__, count)
+        win = winclass(self, name=name)
+        win.show()
+        self._child_windows[name] = win
+        
+
+    def slotNewEntityWindow(self):
+        self._slotNewWindow(MainEntityWindow)
+
+    def slotNewRadioWindow(self):
+        self._slotNewWindow(BaseRadioWindow)
+        
 
     def url_handled(self):
         urls = self.app.urlhandler.completed_urls()
@@ -101,8 +106,11 @@ class MainWindow(KMainWindow, MainDropCatcher):
                     text = "Youtube information\n"
                     text += '---------------------\n'
                 data = self.app.urlhandler.retrieve_data(url)
-                dbdata = dict(name=data['title'], url=url, desc="youtube video")
-                self.app.db.create_entity(dbdata)
+                data['name'] = data['title']
+                data['type'] = 'youtube-video'
+                data['desc'] = 'Youtube video'
+                data['url'] = url
+                self.app.db.create_entity(data)
                 text += 'Title: %s\n' % data['title']
                 text += 'Url for flv file: %s\n' % data['flv_url']
                 text += '\n'
@@ -112,3 +120,14 @@ class MainWindow(KMainWindow, MainDropCatcher):
         for url in urls:
             text += '%s\n' % url
         KMessageBox.information(self, text)
+
+    def show(self):
+        for name, window in self._child_windows.items():
+            window.show()
+        BaseMainWindow.show(self)
+
+    def hide(self):
+        for name, window in self._child_windows.items():
+            window.hide()
+        BaseMainWindow.hide(self)
+        

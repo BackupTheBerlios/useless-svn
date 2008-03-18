@@ -25,8 +25,13 @@ class EntityManager(object):
         self.conn = conn
         self.cursor = self.conn.stmtcursor()
         if not self.cursor.tables():
-            generate_schema(self.cursor)
-
+            import schema, default_database
+            schema.generate_schema(self.cursor)
+            default_database.initialize_database(self)
+            del schema
+            del default_database
+            
+            
     def create_tag(self, tagname):
         self.cursor.insert(table='tagnames', data=dict(tagname=tagname))
 
@@ -45,7 +50,7 @@ class EntityManager(object):
     def get_extra_fields(self, etype):
         clause = Eq('type', etype)
         rows = self.cursor.select(table='entity_type_extfields', clause=clause)
-        return [row.type for row in rows]
+        return [row.fieldname for row in rows]
     
     def create_entity(self, data):
         name = data['name']
@@ -64,6 +69,7 @@ class EntityManager(object):
             entityid = self.get_id(edata['name'])
             etype = data['type']
             extfields = self.get_extra_fields(etype)
+            print 'extfields', extfields, 'for etype', etype
             if extfields:
                 extdata = dict(entityid=entityid)
                 table = 'entity_extfields'
@@ -164,7 +170,16 @@ class EntityManager(object):
     def get_all_tags(self):
         rows = self.cursor.select(table='tagnames')
         return [row.tagname for row in rows]
+
+    def extvalue_exists(self, fieldname, value):
+        clause = Eq('fieldname', fieldname) & Eq('value', value)
+        return len(self.cursor.select(table='entity_extfields', clause=clause))
+
+    def get_entity_types(self):
+        rows = self.cursor.select(table='entity_types')
+        return [row.type for  row in rows]
     
+        
     
 if __name__ == '__main__':
     import os

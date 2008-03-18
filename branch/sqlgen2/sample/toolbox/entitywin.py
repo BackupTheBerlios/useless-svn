@@ -7,28 +7,83 @@ from kdeui import KMessageBox
 from kdeui import KStdAction
 from kdeui import KPopupMenu
 
-from useless.kdebase.actions import BaseItem, BaseAction
 from useless.kdebase.mainwin import BaseMainWindow
 
+from windows import BaseToolboxWindow
+
+from actions import NewTagAction
 from infopart import InfoPart
 #from dialogs import BaseEntityDialog
 from dialogs import MainEntityDialog
 from dialogs import NewTagDialog
 
-class NewTagItem(BaseItem):
-    def __init__(self):
-        BaseItem.__init__(self, 'New Tag', 'add', 'Create a new tag', 'Create a new tag')
-
-class NewTagAction(BaseAction):
-    def __init__(self, slot, parent):
-        BaseAction.__init__(self, NewTagItem(), slot, parent, name='NewTagAction')
-
-
-class MainEntityWindow(BaseMainWindow):
-    def __init__(self, parent, name='MainEntityWindow'):
+class EntityTypeWindow(BaseMainWindow):
+    def __init__(self, parent, name='EntityTypeWindow'):
         BaseMainWindow.__init__(self, parent, name=name)
-        KMainWindow.__init__(self, parent, 'Uncover Truth Frontend')
-        self.main_toolbox_window = parent
+        self.splitView = QSplitter(self, 'splitView')
+        self.etypeView = KListView(self.splitView, 'etypes_view')
+        self.extfieldsView = KListView(self.splitView, 'extfields_view')
+        self.initActions()
+        self.initMenus()
+        self.initToolbar()
+        self.setCentralWidget(self.splitView)
+        self.connect(self.etypeView,
+                     SIGNAL('selectionChanged()'), self.selectionChanged)
+        self.initlistView()
+        
+        
+
+    def initActions(self):
+        collection = self.actionCollection()
+        self.quitAction = KStdAction.quit(self.close, collection)
+        self.newEntityTypeAction = KStdAction.openNew(self.slotNewEntityType, collection)
+        self.newExtraFieldAction = KStdAction.addBookmark(self.slotNewExtraField, collection)
+        
+    def initMenus(self):
+        mainmenu = KPopupMenu(self)
+        self.newEntityTypeAction.plug(mainmenu)
+        self.newExtraFieldAction.plug(mainmenu)
+        self.quitAction.plug(mainmenu)
+        menubar = self.menuBar()
+        menubar.insertItem('&Main', mainmenu)
+                
+    def initToolbar(self):
+        toolbar = self.toolBar()
+        self.newEntityTypeAction.plug(toolbar)
+        self.newExtraFieldAction.plug(toolbar)
+        self.quitAction.plug(toolbar)
+        
+    def initlistView(self):
+        self.etypeView.addColumn('entity type', -1)
+        self.extfieldsView.addColumn('extra field', -1)
+        self.refreshListView()
+
+    def refreshListView(self):
+        self.etypeView.clear()
+        etypes = self.app.db.get_entity_types()
+        for etype in etypes:
+            item = KListViewItem(self.etypeView, etype)
+            item.etype = etype
+        
+    def selectionChanged(self):
+        item = self.etypeView.currentItem()
+        etype = item.etype
+        fields = self.app.db.get_extra_fields(etype)
+        self.extfieldsView.clear()
+        for field in fields:
+            item = KListViewItem(self.extfieldsView, field)
+            item.fieldname = field
+            
+    def slotNewEntityType(self):
+        print 'in slotNewEntityType'
+
+    def slotNewExtraField(self):
+        print 'in slotNewExtraField'
+        
+    
+class MainEntityWindow(BaseToolboxWindow):
+    def __init__(self, parent, name='MainEntityWindow'):
+        BaseToolboxWindow.__init__(self, parent, name=name)
         self.splitView = QSplitter(self, 'splitView')
         self.listView = KListView(self.splitView, 'entities_view')
         self.textView = InfoPart(self.splitView)
@@ -56,15 +111,15 @@ class MainEntityWindow(BaseMainWindow):
         collection = self.actionCollection()
         self.quitAction = KStdAction.quit(self.close, collection)
         self.newEntityAction = KStdAction.openNew(self.slotNewEntity, collection)
-        self.selectAllAction = KStdAction.selectAll(self.slotSelectAll,
-                                                    collection)
         self.newTagAction = NewTagAction(self.slotNewTag, collection)
-
+        self.manageEntityTypesAction = KStdAction.addBookmark(self.slotManageEntityTypes,
+                                                              collection)
+        
     def initMenus(self):
         mainmenu = KPopupMenu(self)
         self.newEntityAction.plug(mainmenu)
         self.newTagAction.plug(mainmenu)
-        self.selectAllAction.plug(mainmenu)
+        self.manageEntityTypesAction.plug(mainmenu)
         self.quitAction.plug(mainmenu)
         menubar = self.menuBar()
         menubar.insertItem('&Main', mainmenu)
@@ -103,17 +158,10 @@ class MainEntityWindow(BaseMainWindow):
         dlg = NewTagDialog(self)
         dlg.show()
         
-    def slotSelectAll(self):
-        self.textView.view_all_guests()
-
-    def slotSortByName(self):
-        self._sortby = 'name'
-        self.refreshListView()
-
-    def slotSortByAppearance(self):
-        self._sortby = 'guestid'
-        self.refreshListView()
-
+    def slotManageEntityTypes(self):
+        win = EntityTypeWindow(self)
+        win.show()
+    
     def _new_entity_added(self):
         dlg = self._new_entity_dlg
         if dlg is not None:
@@ -131,5 +179,4 @@ class MainEntityWindow(BaseMainWindow):
         #KMessageBox.error(self, 'ack refreshDisplay called')
         #self.refreshListView()
         self.selectionChanged()
-        
-        
+
