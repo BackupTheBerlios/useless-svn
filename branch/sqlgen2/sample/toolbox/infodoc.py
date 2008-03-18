@@ -43,9 +43,13 @@ class MainTable(BaseMainTable):
     def set_info(self, entityid):
         db = self.app.db
         self.entityid = entityid
-        row = db.get(entityid)
-        print row
-        name = TableHeader(row['name'], colspan=2, align='center')
+        edata = db.get(entityid)
+        main = edata['main']
+        extras = edata['extras']
+        tags = edata['tags']
+
+        # set name and main action links
+        name = TableHeader(main['name'], colspan=2, align='center')
         name_row = TableRow(name)
         self.set(name_row)
         edit_anchor = Anchor('(edit)', href=myurl.make('edit', 'entity', str(entityid)))
@@ -53,17 +57,32 @@ class MainTable(BaseMainTable):
         cell = TableCell(edit_anchor)
         self.append(TableRow(cell))
         cell = TableCell(delete_anchor)
-        #cell.append(delete_anchor)
+        self.append(TableRow(cell))
+
+        
+        # set type
+        cell = TableCell('type:  %s' % main['type'], colspan=2)
         self.append(TableRow(cell))
         
-        cell = TableCell('type:  %s' % row['type'], colspan=2)
-        self.append(TableRow(cell))
-        if row['url']:
-            urlanchor = Anchor('url', href=row['url'])
+        # extra fields
+        extfield_rows = extras
+        if extfield_rows:
+            self.append(TableRow(TableCell(Bold('Extra Fields'))))
+            for erow in extfield_rows:
+                cell = TableCell('%s:  %s' % (erow['fieldname'], erow['value']))
+                self.append(TableRow(cell))
+
+        # back to main data
+        if main['url']:
+            urlanchor = Anchor('url', href=main['url'])
             self.append(TableRow(TableCell(urlanchor, colspan=2)))
-        if row['desc']:
+        if main['desc']:
             self.append(TableRow(TableCell(Bold('Description'), colspan=2)))
-            self.append(TableRow(TableCell(row['desc']), colspan=2))
+            desc = Paragraph(main['desc'])
+            cell = TableCell(desc)
+            self.append(TableRow(cell, colspan=2))
+
+        # handle tags
         tagrow = TableRow()
         tagrow.append(TableCell(Bold('Tags'), colspan=2))
         span = Span(style='font-size: xx-small')
@@ -74,7 +93,7 @@ class MainTable(BaseMainTable):
         cell = TableCell(span, colspan=2)
         tagrow.append(cell)
         self.append(tagrow)
-        for tagname in db.get_tags(self.entityid):
+        for tagname in tags:
             row = TableRow()
             cell = TableCell(tagname)
             row.set(cell)

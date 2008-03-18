@@ -4,7 +4,7 @@ class BaseToolboxWindow(BaseMainWindow):
     def __init__(self, parent, name='BaseToolboxWindow'):
         BaseMainWindow.__init__(self, parent, name=name)
         self.main_toolbox_window = parent
-
+        self.setCaption(name)
     # the desired behavior of the application is to not
     # quit when the main window is hidden and the
     # current window is the last one being displayed

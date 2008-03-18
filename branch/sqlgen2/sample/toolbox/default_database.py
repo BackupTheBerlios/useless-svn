@@ -1,13 +1,18 @@
 
 
 # default entity types
-etypes = ['person', 'wikipedia-article', 'youtube-video']
+etypes = ['person', 'wikipedia-article', 'youtube-video', 'website',
+          'webpage', 'weblog']
 
 
 
 extfields = {}
 key = 'youtube-video'
-extfields[key] = ['youtubeid']
+for key in ['wikipedia-article', 'youtube-video', 'website',
+            'webpage', 'weblog']:
+    extfields[key] = ['main_url']
+extfields['youtube-video'].append('youtubeid')
+extfields['person'] = ['firstname', 'lastname']
 
 # manager is EntityManager
 def initialize_database(manager):

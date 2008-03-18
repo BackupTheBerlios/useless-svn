@@ -9,13 +9,46 @@ from kdeui import KDialogBase
 from kdeui import KPushButton
 from kdeui import KStdGuiItem
 
+from kdeui import KComboBox
+
 from useless.kdebase import get_application_pointer
 from useless.kdebase.dialogs import BaseDialogWindow
+from useless.kdebase.dialogs import SimpleEntryDialog
+from useless.kdebase.dialogs import VboxDialog
 
+class AppFrame(QFrame):
+    def __init__(self, *args):
+        QFrame.__init__(self, *args)
+        self.app = get_application_pointer()
     
-class BaseEntityDataFrame(QFrame):
+class NewTagDialog(SimpleEntryDialog):
+    def __init__(self, parent, name='NewTagDialog'):
+        label = 'Enter a new tag name'
+        SimpleEntryDialog.__init__(self, parent, label=label, name=name)
+
+    def ok_clicked(self):
+        tagname = str(self.entry.text())
+        self.app.db.create_tag(tagname)
+
+class SelectEntityTypeDialog(VboxDialog):
+    def __init__(self, parent, name='SelectEntityTypeDialog'):
+        VboxDialog.__init__(self, parent, name=name)
+        self.label = QLabel('Select entity type', self.frame)
+        self.combo = KComboBox(self.frame)
+        self.vbox.addWidget(self.label)
+        self.vbox.addWidget(self.combo)
+        etypes = self.app.db.get_entity_types()
+        self.combo.insertStrList(etypes)
+        self.connect(self.combo, SIGNAL('activated(const QString &)'),
+                     self._etype_selected)
+        
+    def _etype_selected(self, etype):
+        self.emit(SIGNAL('okClicked()'), tuple())
+        self.close()
+        
+class BaseEntityDataFrame(AppFrame):
     def __init__(self, parent, name='BaseEntityDataFrame'):
-        QFrame.__init__(self, parent, name)
+        AppFrame.__init__(self, parent, name)
         self.entityid = None
         numrows = 2
         numcols = 1
@@ -33,10 +66,12 @@ class BaseEntityDataFrame(QFrame):
         self.grid.addWidget(self.name_entry, 1, 0)
 
         self.etype_lbl = QLabel('type', self)
-        self.etype_entry = KLineEdit('generic', self)
-
+        self.etype_combo = KComboBox(self, 'etype_combo')
+        self.etype_combo.insertStrList(self.app.db.get_entity_types())
+        self.connect(self.etype_combo, SIGNAL('activated(const QString &)'),
+                                              self.change_etype)
         self.grid.addWidget(self.etype_lbl, 2, 0)
-        self.grid.addWidget(self.etype_entry, 3, 0)
+        self.grid.addWidget(self.etype_combo, 3, 0)
 
         self.url_lbl = QLabel('url', self)
         self.url_entry = KLineEdit('', self)
@@ -44,7 +79,9 @@ class BaseEntityDataFrame(QFrame):
         self.grid.addWidget(self.url_lbl, 4, 0)
         self.grid.addWidget(self.url_entry, 5, 0)
         
-
+        grid_rownum = 6
+        
+        
         self.desc_lbl = QLabel('Description', self)
         self.desc_entry = KTextEdit(self, 'description_entry')
         self.desc_entry.setTextFormat(self.PlainText)
@@ -56,9 +93,12 @@ class BaseEntityDataFrame(QFrame):
         #self.grid.addMultiCellWidget(self.works_frame, 8, 8, 0, 1)
 
 
+    def change_etype(self, etype):
+        print 'change_etype', etype
+        
     def get_data(self):
         name = str(self.name_entry.text())
-        etype = str(self.etype_entry.text())
+        etype = str(self.etype_combo.currentText())
         url = str(self.url_entry.text())
         desc = str(self.desc_entry.text())
         data = dict(name=name, type=etype,
@@ -68,11 +108,12 @@ class BaseEntityDataFrame(QFrame):
         return data
 
     def set_data(self, data):
-        self.entityid = data['entityid']
-        self.name_entry.setText(data['name'])
-        self.etype_entry.setText(data['type'])
-        self.url_entry.setText(data['url'])
-        self.desc_entry.setText(data['desc'])
+        main = data['main']
+        self.entityid = main['entityid']
+        self.name_entry.setText(main['name'])
+        self.etype_combo.setCurrentText(main['type'])
+        self.url_entry.setText(main['url'])
+        self.desc_entry.setText(main['desc'])
 
 class BaseEntityDialog(BaseDialogWindow):
     def __init__(self, parent, name='BaseEntityDialog'):
@@ -135,8 +176,6 @@ class BaseTagsDialog(BaseDialogWindow):
         self.entityid = entityid
         self.frame = BaseTagDialogFrame(self)
         self.setMainWidget(self.frame)
-        #import pdb
-        #pdb.set_trace()
         self.frame.listView.setSelectionModeExt(KListView.Extended)
         
 class AddTagsDialog(BaseTagsDialog):
@@ -174,45 +213,3 @@ class RemoveTagsDialog(BaseTagsDialog):
             self.app.db.delete_tag(tagname, self.entityid)
             
             
-class NewTagDialogOrig(BaseDialogWindow):
-    def __init__(self, parent, name='NewTagDialog'):
-        BaseDialogWindow.__init__(self, parent, name=name)
-        self.frame = QFrame(self)
-        numrows = 2
-        numcols = 1
-        margin = 0
-        space = 1
-        self.grid = QGridLayout(self.frame, numrows, numcols,
-                                margin, space, 'NewTagDialogLayout')
-        self.lbl = QLabel('Enter new tag name', self.frame)
-        self.entry = KLineEdit(self.frame, '')
-        self.grid.addWidget(self.lbl, 0, 0)
-        self.grid.addWidget(self.entry, 1, 0)
-
-        self.setMainWidget(self.frame)
-        
-        self.connect(self, SIGNAL('okClicked()'),  self.create_new_tag)
-
-    def create_new_tag(self):
-        tagname = str(self.entry.text())
-        self.app.db.create_tag(tagname)
-
-
-
-########################
-from useless.kdebase.dialogs import VboxDialog
-class NewTagDialog(VboxDialog):
-    def __init__(self, parent, name='NewTagDialog'):
-        VboxDialog.__init__(self, parent, name=name)
-        self.label = QLabel('Enter new tag name', self.frame)
-        self.entry = KLineEdit(self.frame, '')
-        self.vbox.setMargin(3)
-        self.vbox.setSpacing(2)
-        self.vbox.addWidget(self.label)
-        self.vbox.addWidget(self.entry)
-        self.connect(self, SIGNAL('okClicked()'), self.create_new_tag)
-
-    def create_new_tag(self):
-        tagname = str(self.entry.text())
-        self.app.db.create_tag(tagname)
-        
