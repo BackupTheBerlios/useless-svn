@@ -17,4 +17,7 @@ def excepthook(type, value, tracebackobj):
     msg = '%s: %s' % (type, value)
     msg = '%s\n%s\n%s' % (separator, msg, separator)
     KMessageBox.detailedError(None, msg, tbinfo)
-    
+    if 'DEBUG' in os.environ:
+        import pdb
+        pdb.pm()
+        

@@ -1,14 +1,27 @@
 from qt import QFrame
 from qt import QVBoxLayout
+from qt import QLabel
+from qt import SIGNAL
+
+from kdecore import KApplication
 
 from kdeui import KDialogBase
 from kdeui import KActionSelector
+from kdeui import KLineEdit
 
 from frame import BaseRecordFrame
 
-class VboxDialog(KDialogBase):
-    def __init__(self, parent, name='VboxDialog'):
+def get_application_pointer():
+    return KApplication.kApplication()
+
+class BaseDialogWindow(KDialogBase):
+    def __init__(self, parent, name='BaseDialogWindow'):
         KDialogBase.__init__(self, parent, name)
+        self.app = get_application_pointer()
+        
+class VboxDialog(BaseDialogWindow):
+    def __init__(self, parent, name='VboxDialog'):
+        BaseDialogWindow.__init__(self, parent, name=name)
         self.frame = QFrame(self)
         self.setMainWidget(self.frame)
         margin = 5
@@ -27,9 +40,9 @@ class BaseAssigner(VboxDialog):
     def initView(self):
         raise NotImplementedError, 'initView not implemented in base class'
     
-class BaseRecordDialog(KDialogBase):
+class BaseRecordDialog(BaseDialogWindow):
     def __init__(self, parent, fields, record=None, name='BaseRecordDialog'):
-        KDialogBase.__init__(self, parent, name)
+        BaseDialogWindow.__init__(self, parent, name=name)
         text = 'This is a base record dialog.'
         self.frame = BaseRecordFrame(self, fields, text=text, record=record)
         self.showButtonApply(False)
@@ -50,3 +63,22 @@ class EditRecordDialog(BaseRecordDialog):
         self.setButtonOKText('update', 'update')
         self.setText('Edit this record.')
         
+class SimpleEntryDialog(VboxDialog):
+    def __init__(self, parent, label="Enter Value", entry='', name='SimpleEntryDialog'):
+        VboxDialog.__init__(self, parent, name=name)
+        self.showButtonApply(False)
+        self.label = QLabel(label, self.frame)
+        self.entry = KLineEdit(self.frame, entry)
+        self.vbox.setMargin(3)
+        self.vbox.setSpacing(2)
+        self.vbox.addWidget(self.label)
+        self.vbox.addWidget(self.entry)
+        self.connect(self, SIGNAL('okClicked()'), self.ok_clicked)
+        
+    def _get_entry(self):
+        return str(self.entry.text())
+    
+    def ok_clicked(self):
+        errmsg = "ok_clicked needs to be defined in subclass of SimpleEntryDialog"
+        raise NotImplementedError, errmsg
+    

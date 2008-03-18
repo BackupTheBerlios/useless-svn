@@ -6,13 +6,17 @@ from kdeui import KListView
 from kdeui import KStdAction
 from kdeui import KPopupMenu
 
+from base import get_application_pointer
+
 
 from error import MethodNotImplementedError
 
 class BaseMainWindow(KMainWindow):
     def __init__(self, parent, name='BaseMainWindow'):
         KMainWindow.__init__(self, parent, name)
-    
+        self.app = get_application_pointer()
+        
+        
     def initActions(self):
         raise MethodNotImplementedError(self, 'initActions not implemented in base class')
 
