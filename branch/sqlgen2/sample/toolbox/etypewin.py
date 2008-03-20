@@ -5,6 +5,7 @@ from kdeui import KListView, KListViewItem
 from kdeui import KMessageBox
 from kdeui import KStdAction
 from kdeui import KPopupMenu
+from kdeui import KComboBox
 
 from useless.kdebase.mainwin import BaseMainWindow
 from useless.kdebase.dialogs import SimpleEntryDialog
@@ -24,12 +25,17 @@ class NewExtraFieldDialog(SimpleEntryDialog):
     def __init__(self, parent, etype, name='NewExtraFieldDialog'):
         label = "Enter a new extra field for entity type %s" % etype
         SimpleEntryDialog.__init__(self, parent, label=label, name=name)
+        self.combo = KComboBox(self.frame)
+        types = ['name', 'bool', 'int', 'url', 'text']
+        self.combo.insertStrList(types)
         self.etype = etype
-
+        self.vbox.addWidget(self.combo)
+        
     def ok_clicked(self):
         fieldname = self._get_entry().strip()
+        fieldtype = str(self.combo.currentText())
         if fieldname:        
-            self.app.db.create_extra_field(self.etype, fieldname)
+            self.app.db.create_extra_field(self.etype, fieldname, fieldtype=fieldtype)
         
 class EntityTypeWindow(BaseMainWindow):
     def __init__(self, parent, name='EntityTypeWindow'):
@@ -70,7 +76,8 @@ class EntityTypeWindow(BaseMainWindow):
         
     def initlistView(self):
         self.etypeView.addColumn('entity type', -1)
-        self.extfieldsView.addColumn('extra field', -1)
+        self.extfieldsView.addColumn('fieldname')
+        self.extfieldsView.addColumn('fieldtype')
         self.refreshListView()
 
     def refreshListView(self):
@@ -87,8 +94,9 @@ class EntityTypeWindow(BaseMainWindow):
         fields = self.app.db.get_etype_extra_fields(etype)
         self.extfieldsView.clear()
         for field in fields:
-            item = KListViewItem(self.extfieldsView, field)
-            item.fieldname = field
+            item = KListViewItem(self.extfieldsView, *field)
+            item.fieldname = field[0]
+            
             
     def slotNewEntityType(self):
         dlg = NewEntityTypeDialog(self)

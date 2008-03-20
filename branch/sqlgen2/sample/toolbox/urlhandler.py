@@ -95,9 +95,10 @@ class BaseUrlHandler(BaseProcessHandler):
 
 class MainUrlHandler(BaseUrlHandler):
     UnknownProtocolError = UnknownProtocolError
-    def __init__(self, db):
+    def __init__(self, app):
         BaseUrlHandler.__init__(self)
-        self.db = db
+        self.app = app
+        self.db = self.app.db
         
     def handle_http_protocol(self, url):
         if url.host.endswith('youtube.com'):
@@ -105,24 +106,35 @@ class MainUrlHandler(BaseUrlHandler):
             if match is not None:
                 self.handle_youtube_url(url)
             else:
-                raise UnhandledUrlError, 'unable to handle url %s' % url
+                raise UnhandledUrlError(url, 'unable to handle url %s' % url)
         else:
-            raise UnhandledUrlError, 'unable to handle url %s' % url
+            raise UnhandledUrlError(url, 'unable to handle url %s' % url)
 
         
-    
-    def handle_youtube_url(self, url):
-        match = youtube_url_re.match(url)
-        youtubeid = match.group(2)
-        if not self.db.extvalue_exists('youtubeid', youtubeid):
+    def _do_youtube_job(self, youtubeid, url, entityid=None):
             print 'handle_youtube_url', url
             job = Process(('youtube-dl', '-g', '-2', str(url)), stdout=subprocess.PIPE)
             job.jobtype = 'youtube-dl'
             job.handled_url = url
             job.youtubeid = youtubeid
+            job.entityid = entityid
             self.jobs.append(job)
+            
+    def handle_youtube_url(self, url):
+        match = youtube_url_re.match(url)
+        youtubeid = match.group(2)
+        if not self.db.extvalue_exists('youtubeid', youtubeid):
+            self._do_youtube_job(youtubeid, url)
         else:
-            print "already have %s" % youtubeid
+            entityid = self.db.get_id_by_extras(dict(youtubeid=youtubeid))
+            rows = self.db.get_extra_fields(entityid)
+            data = dict([(r.fieldname, r.value) for r in rows])
+            key = 'local-copy'
+            lc = data['local-copy']
+            if lc == 'False':
+                self._do_youtube_job(youtubeid, url, entityid=entityid)
+                
+            
             
     def handle_job(self, job):
         if job.jobtype == 'youtube-dl':
@@ -132,10 +144,10 @@ class MainUrlHandler(BaseUrlHandler):
             
         
     def handle_youtubedl_job(self, job):
-        if job.returncode == 0:
+         if job.returncode == 0:
             title, flv_url, ignore = job.stdout.read().split('\n')
             data = dict(title=title, flv_url=flv_url, jobtype=job.jobtype,
-                        youtubeid=job.youtubeid)
+                        youtubeid=job.youtubeid, entityid=job.entityid)
             self._handled_urls[job.handled_url] = data            
         else:
             raise OSError, 'job returned %d' % job.returncode

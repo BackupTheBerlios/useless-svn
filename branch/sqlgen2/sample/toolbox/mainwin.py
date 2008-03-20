@@ -1,3 +1,5 @@
+import string
+
 from qt import SIGNAL, PYSIGNAL
 from qt import QLabel
 from qt import QStringList
@@ -97,29 +99,50 @@ class MainWindow(BaseMainWindow, MainDropCatcher):
         self._slotNewWindow(BaseRadioWindow)
         
 
+    def _make_youtube_dl_filename(self, youtubeid, title):
+        title = ''.join(x in string.ascii_letters + string.digits and x or '_' for x in title)
+        title = title.replace(' ', '_')
+        # determine filename
+        filename = '%s-%s.flv' % (title, data['youtubeid'])
+        return filename
+    
     def url_handled(self):
         urls = self.app.urlhandler.completed_urls()
-        text = ''
         for url in urls:
             if url.host.endswith('youtube.com'):
-                if not text:
-                    text = "Youtube information\n"
-                    text += '---------------------\n'
+                download = False
+                main = dict()
                 data = self.app.urlhandler.retrieve_data(url)
-                data['name'] = data['title']
-                data['type'] = 'youtube-video'
-                data['desc'] = 'Youtube video'
-                data['url'] = url
-                self.app.db.create_entity(data)
-                text += 'Title: %s\n' % data['title']
-                text += 'Url for flv file: %s\n' % data['flv_url']
-                text += '\n'
-        urls = self.app.urlhandler.completed_urls()
-        if urls:
-            text += 'Unknown urls\n'
-        for url in urls:
-            text += '%s\n' % url
-        KMessageBox.information(self, text)
+                if data.has_key('entityid') and data['entityid'] is None:
+                    main['name'] = data['title']
+                    main['type'] = 'youtube-video'
+                    main['desc'] = 'Youtube video'
+                    main['url'] = url
+                    extras = dict()
+                    extras['youtubeid'] = data['youtubeid']
+                    # default to not there
+                    extras['local-copy'] = False
+                    # normalize title similar to youtube-dl
+                    filename = self._make_youtube_dl_filename(data['youtubeid'], data['title'])
+                    # add filename to extras
+                    extras['local-filename'] = filename
+                    # create entity
+                    dbdata = dict(main=main, extras=extras, tags=list())
+                    self.app.db.create_entity(dbdata)
+                    download = True
+                else:
+                    entityid = data['entityid']
+                    lc = self.app.db.get_extra_field_data(entityid, 'local-copy')
+                    
+                    if lc == 'False':
+                        download = True
+                        filename = self.app.db.get_extra_field_data(entityid, 'local-filename')
+                if download:
+                    # download youtube video
+                    self.app.filehandler.download(data['flv_url'], filename)
+                
+        msg = "handled url %s" % ',\n '.join(list(urls))
+        KMessageBox.information(self, msg)
 
     def show(self):
         for name, window in self._child_windows.items():

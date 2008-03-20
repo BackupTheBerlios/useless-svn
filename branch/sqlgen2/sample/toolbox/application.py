@@ -16,6 +16,7 @@ from dcopexport import DCOPExObj
 
 from dblite import Connection, EntityManager
 from urlhandler import MainUrlHandler
+from filehandler import BaseFileHandler
 
 class ToolBoxDCOPInterface(DCOPExObj):
     def __init__(self, id='toolbox-handler'):
@@ -55,7 +56,9 @@ class MainApplication(KApplication):
         #self.guests = Guests(self.conn)
         self.db = EntityManager(self.conn)
 
-        self.urlhandler = MainUrlHandler(self.db)
+        self.urlhandler = MainUrlHandler(self)
+        self.filehandler = BaseFileHandler(self)
+        
         # setup the timer to handle background jobs
         self.timer = QTimer()
         # every five seconds

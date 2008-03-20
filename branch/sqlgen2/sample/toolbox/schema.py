@@ -64,12 +64,17 @@ class EntityTypeExtraFieldsTable(Table):
         etype = PkName('type')
         # fieldname is foreign key to ExtraFieldsTable
         fieldname = PkBigname('fieldname')
-        Table.__init__(self, 'entity_type_extfields', [etype, fieldname])
+        # the supported types will be bool, int, name, url, and text
+        fieldtype = Name('fieldtype')
+        fieldtype.set_default('name')
+        Table.__init__(self, 'entity_type_extfields', [etype, fieldname, fieldtype])
         
 class EntityExtraFieldsTable(Table):
     def __init__(self):
         entityid = PkNum('entityid')
         fieldname = PkBigname('fieldname')
+        # value defaults to text type, it needs to be coerced into
+        # it's supported type
         value = Text('value')
         cols = [entityid, fieldname, value]
         Table.__init__(self, 'entity_extfields', cols)

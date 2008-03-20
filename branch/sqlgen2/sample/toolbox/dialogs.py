@@ -16,11 +16,6 @@ from useless.kdebase.dialogs import BaseDialogWindow
 from useless.kdebase.dialogs import SimpleEntryDialog
 from useless.kdebase.dialogs import VboxDialog
 
-class AppFrame(QFrame):
-    def __init__(self, *args):
-        QFrame.__init__(self, *args)
-        self.app = get_application_pointer()
-    
 class NewTagDialog(SimpleEntryDialog):
     def __init__(self, parent, name='NewTagDialog'):
         label = 'Enter a new tag name'

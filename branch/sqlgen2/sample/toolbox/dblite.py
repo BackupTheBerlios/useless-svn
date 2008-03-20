@@ -10,6 +10,9 @@ from schema import generate_schema
 class EntityExistsError(StandardError):
     pass
 
+class TooManyRows(LookupError):
+    pass
+
 class Connection(LocalConnection):
     def __init__(self, dbname='test.db', autocommit=1, encoding='utf-8'):
         LocalConnection.__init__(self, dbname=dbname, autocommit=autocommit,
@@ -44,40 +47,54 @@ class EntityManager(object):
     def create_entity_type(self, etype):
         self.cursor.insert(table='entity_types', data=dict(type=etype))
 
-    def create_extra_field(self, etype, fieldname):
-        data = dict(type=etype, fieldname=fieldname)
+    def create_extra_field(self, etype, fieldname, fieldtype='name'):
+        data = dict(type=etype, fieldname=fieldname, fieldtype=fieldtype)
         self.cursor.insert(table='entity_type_extfields', data=data)
 
     def get_etype_extra_fields(self, etype):
         clause = Eq('type', etype)
         rows = self.cursor.select(table='entity_type_extfields', clause=clause)
-        return [row.fieldname for row in rows]
+        return [(row.fieldname, row.fieldtype) for row in rows]
 
     def get_extra_fields(self, entityid):
         clause = Eq('entityid', entityid)
         return self.cursor.select(table='entity_extfields', clause=clause)
 
-    def create_entity(self, data):
+    def get_extra_field_data(self, entityid, fieldname):
+        clause = Eq('entityid', entityid) & Eq('fieldname', fieldname)
+        rows = self.cursor.select(table='entity_extfields', clause=clause)
+        if rows:
+            return rows[0]['value']
+        else:
+            raise LookupError, 'fieldname %s not found for entity %d' % (fieldname, entityid)
+        
+        
+    def _check_entity_data(self, data):
         if len(data) == 3:
             keys = data.keys()
             keys.sort()
             expected = ['main', 'extras', 'tags']
             expected.sort()
-            if keys == expected:
-                print "new way to create entity"
-                print "still using old way"
-                self.create_entity_old(data['main'])
-            else:
-                self.create_entity_old(data)
-        else:
-            self.create_entity_old(data)
+            return keys == expected        
 
-    def create_entity_old(self, data):
-        import warnings
-        for stacklevel in range(4):
-            warnings.warn('create_entity_old is being deprecated, use new data format',
-                          stacklevel=stacklevel)
+    def create_entity(self, data):
+        if self._check_entity_data(data):
+            name = data['main']['name']
+            clause = Eq('name', name)
+            if self.cursor.select(table='entities', clause=clause):
+                raise EntityExistsError, 'Entity %s already exists.' % name
+            else:
+                entityid = self._insert_main_entity_data(data['main'])
+                etype = data['main']['type']
+                self._insert_extras_entity_data(entityid, etype, data['extras'])
+                if data['tags']:
+                    for tag in tags:
+                        self.tag(entityid, tag)
+        else:
+            raise ValueError, "bad format for data in create_entity"
         
+
+    def _insert_main_entity_data(self, data):
         name = data['name']
         clause = Eq('name', name)
         rows = self.cursor.select(fields=['name'], table='entities', clause=clause)
@@ -92,6 +109,30 @@ class EntityManager(object):
                     edata[field] = data[field]
             self.cursor.insert(table='entities', data=edata)
             entityid = self.get_id(edata['name'])
+            return entityid
+
+    def _insert_extras_entity_data(self, entityid, etype, data):
+        table = 'entity_extfields'
+        extdata = dict(entityid=entityid)
+        extfields = [f[0] for f in self.get_etype_extra_fields(etype)]
+        for field in extfields:
+            if field in data:
+                extdata['fieldname'] = field
+                extdata['value'] = data[field]
+            # make sure we have some data to insert
+            if len(extdata.keys()) > 1:
+                self.cursor.insert(table=table, data=extdata)
+                # reset extdata
+                extdata = dict(entityid=entityid)
+                
+    def create_entity_old(self, data):
+        import warnings
+        msg = 'create_entity_old is being deprecated, use new data format'
+        warnings.warn(msg, stacklevel=2)
+        import traceback
+        traceback.print_stack()
+        
+        if False:
             etype = data['type']
             extfields = self.get_etype_extra_fields(etype)
             print 'extfields', extfields, 'for etype', etype
@@ -106,8 +147,6 @@ class EntityManager(object):
                     # check to see if there are any extra fields to insert
                     if len(extdata.keys()) > 1:
                         self.cursor.insert(table=table, data=extdata)
-        else:
-            raise EntityExistsError, 'Entity %s already exists.' % name
         
     def tag(self, entityid, tagname):
         clause = Eq('tagname', tagname)
@@ -214,7 +253,26 @@ class EntityManager(object):
         return [row.type for  row in rows]
     
         
-    
+    def get_id_by_extras(self, data):
+        items = data.items()
+        if items:
+            clause = Eq('fieldname', items[0][0]) & Eq('value', items[0][1])
+        else:
+            return None
+        for fieldname, value in items[1:]:
+            clause |= Eq('fieldname', fieldname) & Eq('value', value)
+        rows = self.cursor.select(table='entity_extfields', clause=clause)
+        if len(rows) > 1:
+            entityid = rows[0].entityid
+            for row in rows:
+                if row.entityid != entityid:
+                    return None
+            return entityid
+        elif len(rows) == 1:
+            return rows[0].entityid
+        else:
+            return None
+        
 if __name__ == '__main__':
     import os
     
