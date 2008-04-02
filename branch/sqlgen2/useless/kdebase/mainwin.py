@@ -24,10 +24,16 @@ class BaseMainWindow(KMainWindow):
         raise MethodNotImplementedError(self, 'initMenus not implemented in base class')
 
     def initToolbar(self):
-        raise MethodNotImplementedError(self, 'initMenus not implemented in base class')
+        raise MethodNotImplementedError(self, 'initToolbar not implemented in base class')
     
 
 class SimpleMainWindow(BaseMainWindow):
+    def __init__(self, parent, name='SimpleMainWindow'):
+        BaseMainWindow.__init__(self, parent, name=name)
+        self.initActions()
+        self.initMenus()
+        self.initToolbar()
+        
     # in subclass at end of initActions call
     # SimpleMainWindow.initActions(self, collection)
     # to automatically add the quitAction
