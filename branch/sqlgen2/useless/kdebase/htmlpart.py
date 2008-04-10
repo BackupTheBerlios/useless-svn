@@ -3,10 +3,12 @@ from qt import QWidget
 from khtml import KHTMLPart
 
 from base import get_application_pointer
+from base import HasDialogs
 
-class BaseInfoPart(KHTMLPart):
+class BaseInfoPart(KHTMLPart, HasDialogs):
     def __init__(self, parent, name='BaseInfoPart'):
         KHTMLPart.__init__(self, parent, name)
+        HasDialogs.__init__(self)
         self.app = get_application_pointer()
         self.dialog_parent = QWidget(self.parent(), 'dialog_parent')
 

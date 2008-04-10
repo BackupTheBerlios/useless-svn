@@ -7,28 +7,16 @@ from kdeui import KStdAction
 from kdeui import KPopupMenu
 
 from base import get_application_pointer
-
+from base import HasDialogs
 
 from error import MethodNotImplementedError
 
-class BaseMainWindow(KMainWindow):
+class BaseMainWindow(KMainWindow, HasDialogs):
     def __init__(self, parent, name='BaseMainWindow'):
         KMainWindow.__init__(self, parent, name)
+        HasDialogs.__init__(self)
         self.app = get_application_pointer()
-        self.current_dialog = None
 
-    def connect_dialog(self, window, ok_clicked):
-        self.connect(window, SIGNAL('okClicked()'), ok_clicked)
-        self.connect_destroy_dialog(window)
-        
-    def connect_destroy_dialog(self, window):
-        self.connect(window, SIGNAL('cancelClicked()'), self.destroy_current_dialog)
-        self.connect(window, SIGNAL('closeClicked()'), self.destroy_current_dialog)
-        self.current_dialog = window
-
-    def destroy_current_dialog(self):
-        self.current_dialog = None
-        
     def initActions(self):
         raise MethodNotImplementedError(self, 'initActions not implemented in base class')
 
