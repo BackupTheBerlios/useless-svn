@@ -1,15 +1,18 @@
 import os, sys
 import traceback
-from os.path import isfile, isdir, join
+#from os.path import isfile, isdir, join
 from gzip import GzipFile
 from StringIO import StringIO
 from md5 import md5
 import subprocess
+import urlparse
 
 from pipes import Template as PipeTemplate
 import pycurl
 
 from useless.base import debug
+
+from path import path
 
 from defaults import BLOCK_SIZE
 
@@ -92,15 +95,10 @@ def shell(cmd):
     if retval != 0:
         raise ShellError, '%s returned %d' % (cmd, retval)
 
-def makepaths_orig(*paths):
-    for path in paths:
-        if not isdir(path):
-            os.makedirs(path)
-
-def makepaths(*paths):
-    for path in paths:
+def makepaths(*dirs):
+    for adir in paths:
         try:
-            os.makedirs(path)
+            os.makedirs(adir)
         except OSError, inst:
             # expect the error 17, 'File exists'
             if inst.args[0] == 17:
@@ -134,17 +132,17 @@ def apply2file(function, path, *args):
     f.close()
     return result
 
-def wget(url, path='.'):
+def wget(url, directory='.'):
     """this will download a file with wget
     optionally into a path of your choosing,
     by default it's in the current directory.
     """
-    here = os.getcwd()
-    if path == '.':
-        path = here
-    os.chdir(os.path.dirname(path))
-    cmd = 'wget %s' % url
-    os.system(cmd)
+    here = path.getcwd()
+    if directory.relpath() == '.':
+        directory = here
+    os.chdir(directory.dirname())
+    cmd = ('wget', url)
+    subprocess.call(cmd)
     os.chdir(here)
 
 def md5sum(afile):
@@ -176,25 +174,28 @@ class BzipPipe(_zipPipe):
     def __init__(self, decompress=False):
         _zipPipe.__init__(self, 'bzip2', decompress)
         
-def gunzip(path):
-    return os.popen2('gzip -cd %s' %path)[1]
+def gunzip(filename):
+    cmd = ('gzip', '-cd', filename)
+    return subprocess.Popen(cmd, stdout=subprocess.PIPE).stdout
 
-def bunzip(path):
-    return os.popen2('bzip2 -cd %s' %path)[1]
+def bunzip(filename):
+    cmd = ('bzip2', '-cd', filename)
+    return subprocess.Popen(cmd, stdout=subprocess.PIPE).stdout
 
-def check_file(path, md5_, quick=False):
+def check_file(filename, md5_, quick=False):
     """This function will check a file with a
     given md5sum.  It can also be used to
     just check existence.
     """
-    package = os.path.basename(path)
-    if isfile(path):
+    filename = path(filename)
+    package = filename.basename()
+    if filename.isfile():
         if not quick:
             debug('checking ', package)
-            if md5sum(path) == md5_:
+            if md5sum(filename) == md5_:
                 return 'ok'
             else:
-                print package, md5_, md5sum(path)
+                print package, md5_, md5sum(filename)
                 return 'corrupt'
         else:
             return 'ok'
@@ -206,9 +207,12 @@ def get_file(rpath, lpath, result='gone'):
     mirroring debian and should be moved to
     a better spot.
     """
-    dir, package = os.path.split(lpath)
+    rpath = path(rpath)
+    lpath = path(lpath)
+    
+    dir, package = lpath.splitpath()
     if result == 'corrupt':
-        while isfile(lpath):
+        while lpath.isfile():
             os.remove(lpath)
         wget(rpath, lpath)
         print lpath, ' was corrupt, got it'
@@ -241,23 +245,23 @@ def export_vars(out, variables):
     lines = ['export %s=%s\n' %(k,v) for k,v in variables.items()]
     out.write(lines)
     
-def parse_vars(path):
-    f = file(path)
+def parse_vars(filename):
+    f = file(filename)
     lines = [x.strip() for x in f.readlines()]
     items = [(x[0],x[1].strip()) for x in lines if x and x[0] !='#']
     return dict(items)
 
-def parse_vars_eq(path):
-    f = file(path)
+def parse_vars_eq(filename):
+    f = file(filename)
     lines = [x.strip() for x in f.readlines()]
     items = [x.split('=') for x in lines if x and x[0] !='#']
     return dict(items)
 
-def writefile(path, string):
+def writefile(filename, string):
     """this funcion will quickly write a
     string to a path.
     """
-    f = file(path, 'w')
+    f = file(filename, 'w')
     f.write(string)
     f.close()
 
@@ -286,10 +290,10 @@ def get_url(url):
     string.seek(0)
     return string
 
-def filecopy(afile, path):
+def filecopy(afile, filename):
     """Simple copy of a fileobject to a path
     """
-    newfile = file(path, 'w')
+    newfile = file(filename, 'w')
     if afile.tell() != 0:
         afile.seek(0)
     block = afile.read(1024)
@@ -428,7 +432,40 @@ def excepthook_message(type, value, tracebackobj):
     msg = '\n'.join(sections)
     return msg
 
+class Url(str):
+    def __init__(self, url):
+        str.__init__(self, str(url))
+        self.url_orig = url
+        url = str(url)
+        protocol, host, path_, parameters, query, frag_id = urlparse.urlparse(url)
+        self.protocol = protocol
+        self.host = host
+        self.path = path(path_)
+        self.parameters = parameters
+        self.query = query
+        self.frag_id = frag_id
 
+    def astuple(self):
+        return (self.protocol, self.host, self.path, self.parameters,
+                self.query, self.frag_id)
+
+    def asdict(self):
+        return dict(protocol=self.protocol, host=self.host, path=self.path,
+                    parameters=self.parameters, query=self.query, frag_id=self.frag_id)
+    
+    def output(self):
+        return str(urlparse.urlunparse(self.astuple()))
+
+    def __repr__(self):
+        return 'Url(%s)' % self.output()
+
+    def __str__(self):
+        return self.output()
+
+    def __eq__(self, other):
+        return other.__eq__(self.output())
+    
+    
 if __name__ == '__main__':
     print 'hello'
     
