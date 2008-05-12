@@ -144,7 +144,7 @@ class MainUrlHandler(BaseUrlHandler):
             
         
     def handle_youtubedl_job(self, job):
-         if job.returncode == 0:
+        if job.returncode == 0:
             title, flv_url, ignore = job.stdout.read().split('\n')
             data = dict(title=title, flv_url=flv_url, jobtype=job.jobtype,
                         youtubeid=job.youtubeid, entityid=job.entityid)

@@ -18,11 +18,13 @@ from base import get_application_pointer
 from infopart import InfoPart
 
 from actions import NewEntityWindowAction, NewRadioWindowAction
+from actions import NewRtorrentWindowAction
 
 
 from entitywin import MainEntityWindow
 from radiowin import BaseRadioWindow
 from dropcatcher import MainDropCatcher
+from rtorrentwin import BaseRtorrentWindow
 
 # systray test
 from kdecore import KIcon, KIconLoader
@@ -66,11 +68,14 @@ class MainWindow(BaseMainWindow, MainDropCatcher):
                                                             collection)
         self.newRadioWindowAction = NewRadioWindowAction(self.slotNewRadioWindow,
                                                          collection)
-
+        self.newRtorrentWindowAction = NewRtorrentWindowAction(self.slotNewRtorrentWindow,
+                                                               collection)
+        
     def initMenus(self):
         mainmenu = KPopupMenu(self)
         self.newEntityWindowAction.plug(mainmenu)
         self.newRadioWindowAction.plug(mainmenu)
+        self.newRtorrentWindowAction.plug(mainmenu)
         self.quitAction.plug(mainmenu)
         menubar = self.menuBar()
         menubar.insertItem('&Main', mainmenu)
@@ -79,6 +84,7 @@ class MainWindow(BaseMainWindow, MainDropCatcher):
         toolbar = self.toolBar()
         self.newEntityWindowAction.plug(toolbar)
         self.newRadioWindowAction.plug(toolbar)
+        self.newRtorrentWindowAction.plug(toolbar)
         self.quitAction.plug(toolbar)
 
     def _slotNewWindow(self, winclass):
@@ -98,12 +104,14 @@ class MainWindow(BaseMainWindow, MainDropCatcher):
     def slotNewRadioWindow(self):
         self._slotNewWindow(BaseRadioWindow)
         
-
+    def slotNewRtorrentWindow(self):
+        self._slotNewWindow(BaseRtorrentWindow)
+        
     def _make_youtube_dl_filename(self, youtubeid, title):
         title = ''.join(x in string.ascii_letters + string.digits and x or '_' for x in title)
         title = title.replace(' ', '_')
         # determine filename
-        filename = '%s-%s.flv' % (title, data['youtubeid'])
+        filename = '%s-%s.flv' % (title, youtubeid)
         return filename
     
     def url_handled(self):

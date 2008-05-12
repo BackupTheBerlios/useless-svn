@@ -17,7 +17,12 @@ class NewRadioWindowAction(BaseAction):
                         'Open a new Radio Window', 'Open a new Radio Window')
         BaseAction.__init__(self, item, slot, parent, 'NewRadioWindow')
         
-
+class NewRtorrentWindowAction(BaseAction):
+    def __init__(self, slot, parent):
+        item = BaseItem('Open a new rtorrent window', 'bittorrent',
+                        'Open a new rtorrent window', 'Open a new rtorrent window')
+        BaseAction.__init__(self, item, slot, parent, 'NewRtorrentWindow')
+        
 ##################
 # entity window actions
 ##################
