@@ -9,27 +9,25 @@ from kdeui import KPopupMenu
 from windows import BaseToolboxWindow
 
 from actions import NewTagAction
-from infopart import InfoPart
+from infopart import RtorrentInfoPart
 
 from dialogs import MainEntityDialog
 from dialogs import NewTagDialog
 
-from etypewin import EntityTypeWindow
-        
-from rtorrent import Rtorrent, Server
+from xmlrpc import Rtorrent, Server
 
 class BaseRtorrentWindow(BaseToolboxWindow):
     def __init__(self, parent, name='MainEntityWindow'):
         BaseToolboxWindow.__init__(self, parent, name=name)
         self.splitView = QSplitter(self, 'splitView')
         self.listView = KListView(self.splitView, 'entities_view')
-        self.textView = InfoPart(self.splitView)
+        self.textView = RtorrentInfoPart(self.splitView)
         self.initActions()
         self.initMenus()
         self.initToolbar()
         
-        self.rtserver = Server()
-        self.rtorrent = Rtorrent(self.rtserver)
+        self.app.rtserver = Server()
+        self.app.rtorrent = Rtorrent(self.app.rtserver)
 
         #self._sortby = 'name'
         self.initlistView()
@@ -79,8 +77,8 @@ class BaseRtorrentWindow(BaseToolboxWindow):
 
     def refreshListView(self):
         self.listView.clear()
-        torrents = self.rtorrent.torrents
-        for k, v in self.rtorrent.torrents.items():
+        torrents = self.app.rtorrent.torrents
+        for k, v in self.app.rtorrent.torrents.items():
             item = KListViewItem(self.listView, v.name)
             item.infohash = k
 
@@ -112,11 +110,7 @@ class BaseRtorrentWindow(BaseToolboxWindow):
         item = self.listView.currentItem()
         infohash = item.infohash
         tv = self.textView
-        torrent = self.rtorrent.torrents[infohash]
-        tv.begin()
-        tv.write(str(torrent))
-        tv.end()
-        #self.textView.set_info(item.entityid)
+        self.textView.set_info(infohash)
                 
     def refreshDisplay(self):
         #KMessageBox.error(self, 'ack refreshDisplay called')

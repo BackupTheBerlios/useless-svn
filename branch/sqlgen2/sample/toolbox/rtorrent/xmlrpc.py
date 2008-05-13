@@ -14,7 +14,7 @@ class RemoteObject(object):
 
 
 torrent_attributes = ['name', 'size_bytes',
-                      'completed_bytes', 'message' 'directory', 'ratio',
+                      'completed_bytes', 'message', 'directory', 'ratio',
                       'peer_exchange', 'peers_complete', 'peers_connected',
                       'peers_not_connected', 'priority', 'creation_date',
                       'complete', 'up_total', 'down_rate',
@@ -25,6 +25,11 @@ class Torrent(RemoteObject):
         RemoteObject.__init__(self, server)
         self.infohash = infohash
         self.name = '__unset__'
+        self.attributes = ['infohash', 'name', 'size', 'chunk_size',
+                           'num_chunks', 'directory', 'completed_bytes',
+                           'message', 'ratio', 'peer_exchange', 'peers_connected',
+                           'peers_not_connected', 'peers_complete', 'priority',
+                           'creation_date']
         if self.infohash is not None:
             self.set_infohash(self.infohash)
 
@@ -50,7 +55,6 @@ class Torrent(RemoteObject):
         self.peers_complete = self.get_peers_complete()
         self.priority = self.get_priority()
         self.creation_date = self.get_creation_date()
-        
 
     def get_name(self):
         return self.server.d.get_name(self.infohash)
@@ -143,4 +147,11 @@ class Rtorrent(RemoteObject):
 if __name__ == "__main__":
     s = Server()
     r = Rtorrent(s)
-    
+    import web
+    import web
+    def status_replace(status):
+        return "unknown status"
+    web.template.Template.globals['getattr'] = getattr
+    render = web.template.render('templates/')
+    t = r.torrent_list[3]
+        

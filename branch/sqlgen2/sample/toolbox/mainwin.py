@@ -1,3 +1,7 @@
+import os
+
+# we use string.ascii_letters and string.digits
+# from the string module
 import string
 
 from qt import SIGNAL, PYSIGNAL
@@ -24,7 +28,7 @@ from actions import NewRtorrentWindowAction
 from entitywin import MainEntityWindow
 from radiowin import BaseRadioWindow
 from dropcatcher import MainDropCatcher
-from rtorrentwin import BaseRtorrentWindow
+from rtorrent.mainwin import BaseRtorrentWindow
 
 # systray test
 from kdecore import KIcon, KIconLoader
@@ -46,19 +50,21 @@ class MainWindow(BaseMainWindow, MainDropCatcher):
         self.initActions()
         self.initMenus()
         self.initToolbar()
-        
-        self.systray = MySytemTray(self)
-        systray_menu = self.systray.contextMenu()
-        self.newEntityWindowAction.plug(systray_menu)
-        self.newRadioWindowAction.plug(systray_menu)
+
         
         self.setAcceptDrops(True)
-        
-            
         self.connect(self.app,
                      PYSIGNAL('UrlHandled'), self.url_handled)
         #self.connect(self, SIGNAL('quit()'), self.hide)
         self._child_windows = dict()
+
+        if os.environ.has_key('DEBUG') and os.environ['DEBUG'] == 'nosystray':
+            self.systray = self
+        else:
+            self.systray = MySytemTray(self)
+            systray_menu = self.systray.contextMenu()
+            self.newEntityWindowAction.plug(systray_menu)
+            self.newRadioWindowAction.plug(systray_menu)
         
 
     def initActions(self):
@@ -158,7 +164,10 @@ class MainWindow(BaseMainWindow, MainDropCatcher):
         BaseMainWindow.show(self)
 
     def hide(self):
-        for name, window in self._child_windows.items():
-            window.hide()
-        BaseMainWindow.hide(self)
+        if self.systray is self:
+            BaseMainWindow.close(self)
+        else:
+            for name, window in self._child_windows.items():
+                window.hide()
+            BaseMainWindow.hide(self)
         
