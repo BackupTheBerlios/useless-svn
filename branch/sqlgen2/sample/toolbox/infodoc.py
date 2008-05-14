@@ -40,20 +40,22 @@ class MainTable(BaseMainTable):
         BaseMainTable.__init__(self, app, class_='MainTable')
         self.app = app
         
-    def set_info(self, entityid):
+    def set_info(self, entity):
         db = self.app.db
-        self.entityid = entityid
-        edata = db.get(entityid)
-        main = edata['main']
-        extras = edata['extras']
-        tags = edata['tags']
+        self.entityid = entity.entityid
+        #edata = db.get(entityid)
+        #main = edata['main']
+        #extras = edata['extras']
+        #tags = edata['tags']
 
         # set name and main action links
-        name = TableHeader(main['name'], colspan=2, align='center')
+        name = TableHeader(str(entity.name), colspan=2, align='center')
         name_row = TableRow(name)
         self.set(name_row)
-        edit_anchor = Anchor('(edit)', href=myurl.make('edit', 'entity', str(entityid)))
-        delete_anchor = Anchor('(delete)', href=myurl.make('delete', 'entity', str(entityid)))
+        edit_anchor = Anchor('(edit)',
+                             href=myurl.make('edit', 'entity', str(entity.entityid)))
+        delete_anchor = Anchor('(delete)',
+                               href=myurl.make('delete', 'entity', str(entity.entityid)))
         cell = TableCell(edit_anchor)
         self.append(TableRow(cell))
         cell = TableCell(delete_anchor)
@@ -61,24 +63,24 @@ class MainTable(BaseMainTable):
 
         
         # set type
-        cell = TableCell('type:  %s' % main['type'], colspan=2)
+        cell = TableCell('type:  %s' % str(entity.type), colspan=2)
         self.append(TableRow(cell))
         
         # extra fields
-        extfield_rows = extras
-        if extfield_rows:
+        if entity.extfields:
             self.append(TableRow(TableCell(Bold('Extra Fields'))))
-            for erow in extfield_rows:
-                cell = TableCell('%s:  %s' % (erow['fieldname'], erow['value']))
+            for field in entity.extfields:
+                label = str('%s:  %s' % (field, str(entity.extfields[field].value)))
+                cell = TableCell(label)
                 self.append(TableRow(cell))
 
         # back to main data
-        if main['url']:
-            urlanchor = Anchor('url', href=main['url'])
+        if entity.url:
+            urlanchor = Anchor('url', href=str(entity.url))
             self.append(TableRow(TableCell(urlanchor, colspan=2)))
-        if main['desc']:
+        if entity.desc:
             self.append(TableRow(TableCell(Bold('Description'), colspan=2)))
-            desc = Paragraph(main['desc'])
+            desc = Paragraph(str(entity.desc))
             cell = TableCell(desc)
             self.append(TableRow(cell, colspan=2))
 
@@ -86,16 +88,18 @@ class MainTable(BaseMainTable):
         tagrow = TableRow()
         tagrow.append(TableCell(Bold('Tags'), colspan=2))
         span = Span(style='font-size: xx-small')
-        add_anchor = Anchor('(add)', href=myurl.make('addtag', 'entity', str(entityid)))
-        del_anchor = Anchor('(remove)', href=myurl.make('deltag', 'entity', str(entityid)))
+        add_anchor = Anchor('(add)',
+                            href=myurl.make('addtag', 'entity', str(entity.entityid)))
+        del_anchor = Anchor('(remove)',
+                            href=myurl.make('deltag', 'entity', str(entity.entityid)))
         span.set(add_anchor)
         span.append(del_anchor)
         cell = TableCell(span, colspan=2)
         tagrow.append(cell)
         self.append(tagrow)
-        for tagname in tags:
+        for tag in entity.tags:
             row = TableRow()
-            cell = TableCell(tagname)
+            cell = TableCell(str(tag.tagname))
             row.set(cell)
             self.append(row)
         

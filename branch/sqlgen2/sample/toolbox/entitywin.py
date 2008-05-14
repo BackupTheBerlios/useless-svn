@@ -74,12 +74,20 @@ class MainEntityWindow(BaseToolboxWindow):
 
     def refreshListView(self):
         self.listView.clear()
-        cursor = self.app.conn.stmtcursor()
-        rows = self.app.db.get_entities()
-        for row in rows:
-            item = KListViewItem(self.listView, row['name'])
-            item.entityid = row['entityid']
-
+        #cursor = self.app.conn.stmtcursor()
+        #rows = self.app.db.get_entities()
+        #for row in rows:
+        #    item = KListViewItem(self.listView, row['name'])
+        #    item.entityid = row['entityid']
+        entities = self.app.db.get_entities()
+        for entity in entities:
+            item = KListViewItem(self.listView, entity.name)
+            # we don't need the id anymore
+            item.entityid = entity.entityid
+            # since we can hold the whole object
+            # which will talk to the db as needed
+            item.entity = entity
+            
     def slotNewEntity(self):
         from dialogs import SelectEntityTypeDialog
         win = SelectEntityTypeDialog(self)
@@ -107,7 +115,7 @@ class MainEntityWindow(BaseToolboxWindow):
     def selectionChanged(self):
         item = self.listView.currentItem()
         entityid = item.entityid
-        self.textView.set_info(item.entityid)
+        self.textView.set_info(item.entity)
                 
     def refreshDisplay(self):
         #KMessageBox.error(self, 'ack refreshDisplay called')

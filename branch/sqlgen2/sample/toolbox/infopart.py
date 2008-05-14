@@ -3,12 +3,8 @@ from qt import PYSIGNAL, SIGNAL
 
 from kdecore import KURL
 from kdeui import KMessageBox
-from khtml import KHTMLPart
-#from kfile import KFileDialog
-#from dcopext import DCOPObj
-#from kio import KIO
 
-#from useless.base.util import md5sum
+from useless.kdebase.htmlpart import BaseInfoPart
 
 from base import get_application_pointer
 from base import MyUrl
@@ -23,28 +19,22 @@ from dialogs import RemoveTagsDialog
 
 myurl = MyUrl()
 
-class InfoPart(KHTMLPart):
+class InfoPart(BaseInfoPart):
     def __init__(self, parent, name='InfoPart'):
-        KHTMLPart.__init__(self, parent, name)
-        self.app = get_application_pointer()
-        self.dialog_parent = QWidget(None, 'dialog_parent')
+        BaseInfoPart.__init__(self, parent, name=name)
         self.doc = InfoDoc(self.app)
-        self.blank_window()
 
-        # dialog markers
-        self._update_entity_dlg = None
-        
-    def blank_window(self):
-        self.begin()
-        self.write('')
-        self.end()
 
-    def set_info(self, entityid):
-        self.blank_window()
+    def set_info(self, entity):
+        self.clear_view()
         self.app.processEvents()
         self.begin()
-        self.doc.set_info(entityid)
-        self.entityid = entityid
+        self.doc.set_info(entity)
+        # don't know if we need this anymore
+        # or if we need self.entity = entity
+        # or maybe self.current_entity = entity
+        self.entityid = entity.entityid
+        self.current_entity = entity
         self.write(self.doc.output())
         self.end()
         #self.emit(PYSIGNAL('EntityInfoUpdated'), (entityid,))
@@ -64,19 +54,23 @@ class InfoPart(KHTMLPart):
         action, atype, ident = parsed
         if ident.isdigit():
             ident = int(ident)
+        if ident != self.current_entity.entityid:
+            msg = "ident != current_entity.entityid, %d, %d" \
+                  % (ident, self.current_entity.entityid)
+            raise RuntimeError, msg
         if action == 'edit':
-            if self._update_entity_dlg is None:
-                dlg = MainEntityDialog(self.dialog_parent, dtype='update', entityid=ident)
-                dlg.show()
+            dlg = MainEntityDialog(self.dialog_parent,
+                                   dtype='update', entity=self.current_entity)
+            dlg.show()
                 
         elif action == 'delete':
             print 'delete selected'
 
         elif action == 'addtag':
-            dlg = AddTagsDialog(self.dialog_parent, ident)
+            dlg = AddTagsDialog(self.dialog_parent, self.current_entity)
             dlg.show()
         elif action == 'deltag':
-            dlg = RemoveTagsDialog(self.dialog_parent, ident)
+            dlg = RemoveTagsDialog(self.dialog_parent, self.current_entity)
             dlg.show()
         else:
             KMessageBox.error(self.dialog_parent,

@@ -14,7 +14,9 @@ from kdeui import KMessageBox
 
 from dcopexport import DCOPExObj
 
-from dblite import Connection, EntityManager
+#from dblite import Connection, EntityManager
+from newschema import EntityManager
+
 from urlhandler import MainUrlHandler
 from filehandler import BaseFileHandler
 
@@ -51,11 +53,21 @@ class MainApplication(KApplication):
         self._setup_standard_directories()
         #self._generate_data_directories()
         dbfile = os.path.join(self.datadir, 'main.db')
-        self.conn = Connection(dbname=dbfile, autocommit=True,
-                               encoding='ascii')
+        #self.conn = Connection(dbname=dbfile, autocommit=True,
+        #                       encoding='ascii')
         #self.guests = Guests(self.conn)
-        self.db = EntityManager(self.conn)
-
+        #self.db = EntityManager(self.conn)
+        from sqlalchemy import create_engine
+        from sqlalchemy.orm import sessionmaker
+        self.engine = create_engine('sqlite:///%s' % dbfile)
+        if not self.engine.table_names():
+            from newschema import metadata
+            metadata.create_all(self.engine)
+        self.DbSession = sessionmaker(bind=self.engine,
+                                      autoflush=True, transactional=False)
+        self.session = self.DbSession()
+        self.db = EntityManager(self.session)
+        
         self.urlhandler = MainUrlHandler(self)
         self.filehandler = BaseFileHandler(self)
         

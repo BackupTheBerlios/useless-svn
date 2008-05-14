@@ -38,7 +38,9 @@ class SelectEntityTypeDialog(VboxDialog):
         self.combo = KComboBox(self.frame)
         self.vbox.addWidget(self.label)
         self.vbox.addWidget(self.combo)
-        etypes = self.app.db.get_entity_types()
+        #etypes = self.app.db.get_entity_types()
+        db = self.app.db
+        etypes = [et.type for et in db.session.query(db.EntityType).all()]
         self.combo.insertStrList(etypes)
         self.connect(self.combo, SIGNAL('activated(const QString &)'),
                      self._etype_selected)
@@ -68,7 +70,9 @@ class BaseEntityDataFrame(AppFrame):
 
         self.etype_lbl = QLabel('type', self)
         self.etype_combo = KComboBox(self, 'etype_combo')
-        self.etype_combo.insertStrList(self.app.db.get_entity_types())
+        db = self.app.db
+        etypes = db.session.query(db.EntityType).all()
+        self.etype_combo.insertStrList([e.type for e in etypes])
         self.connect(self.etype_combo, SIGNAL('activated(const QString &)'),
                                               self.change_etype)
         self.grid.addWidget(self.etype_lbl, 2, 0)
@@ -108,14 +112,17 @@ class BaseEntityDataFrame(AppFrame):
             data['entityid'] = self.entityid
         return data
 
-    def set_data(self, data):
-        main = data['main']
-        self.entityid = main['entityid']
-        self.name_entry.setText(main['name'])
-        self.etype_combo.setCurrentText(main['type'])
-        self.url_entry.setText(main['url'])
-        self.desc_entry.setText(main['desc'])
-
+    def set_entity(self, entity):
+        self.entity = entity
+        self.set_data(entity)
+        
+    def set_data(self, entity):
+        self.entityid = entity.entityid
+        self.name_entry.setText(entity.name)
+        self.etype_combo.setCurrentText(entity.type)
+        self.url_entry.setText(entity.url)
+        self.desc_entry.setText(entity.desc)
+        
 class BaseEntityDialog(BaseDialogWindow):
     def __init__(self, parent, name='BaseEntityDialog'):
         BaseDialogWindow.__init__(self, parent, name=name)
@@ -134,19 +141,25 @@ class BaseEntityDialog(BaseDialogWindow):
 
     def update_entity(self):
         data = self.frame.get_data()
-        self.app.db.change_entity(self.entityid, data)
+        updated = [(k, data[k]) for k in data.keys() if data[k] != getattr(self.entity, k)]
+        if updated:
+            for k, v in updated:
+                setattr(self.entity, k, v)
+            self.app.db.session.flush()
+            
         
 class MainEntityDialog(BaseEntityDialog):
-    def __init__(self, parent, dtype='insert', entityid=None, name='MainEntityDialog'):
+    def __init__(self, parent, dtype='insert', entity=None, name='MainEntityDialog'):
         BaseEntityDialog.__init__(self, parent, name=name)
-        self.entityid = entityid
+        self.entity = entity
         self._dtype = dtype
         if self._dtype == 'insert':
             self.connect(self, SIGNAL('okClicked()'), self.insert_entity)
         elif self._dtype == 'update':
             self.connect(self, SIGNAL('okClicked()'), self.update_entity)
-            data = self.app.db.get(self.entityid)
-            self.set_data(data)
+            #data = self.app.db.get(self.entityid)
+            data = dict([(k, getattr(self.entity, k)) for k in self.entity.c.keys()])
+            self.set_data(entity)
         else:
             KMessageBox.error(self, "Bad dtype: %s" % dtype)
             
@@ -172,21 +185,27 @@ class BaseTagDialogFrame(QFrame):
         self.grid.addMultiCellWidget(self.listView, 1, 4, 0, 0)
 
 class BaseTagsDialog(BaseDialogWindow):
-    def __init__(self, parent, entityid, name='BaseTagsDialog'):
+    def __init__(self, parent, entity, name='BaseTagsDialog'):
         BaseDialogWindow.__init__(self, parent, name=name)
-        self.entityid = entityid
+        self.entity = entity
         self.frame = BaseTagDialogFrame(self)
         self.setMainWidget(self.frame)
         self.frame.listView.setSelectionModeExt(KListView.Extended)
         
 class AddTagsDialog(BaseTagsDialog):
-    def __init__(self, parent, entityid, name='AddTagsDialog'):
-        BaseTagsDialog.__init__(self, parent, entityid, name=name)
+    def __init__(self, parent, entity, name='AddTagsDialog'):
+        BaseTagsDialog.__init__(self, parent, entity, name=name)
         sql = 'select tagname from tagnames where tagname not in (select tagname from '
-        sql += 'entitytags where entityid=%d)' % self.entityid
-        self.app.db.cursor.execute(sql)
-        rows = self.app.db.cursor.fetchall()
-        tags = [row.tagname for row in rows]
+        sql += 'entitytags where entityid=%d)' % self.entity.entityid
+        db = self.app.db
+        # we really should try and perform the sql above
+        # or the sqlalchemy equivalent, but this will work
+        # for now
+        all_tags = db.session.query(db.Tag).all()
+        tags = [tag.tagname for tag in all_tags if tag not in self.entity.tags]
+        #self.app.db.cursor.execute(sql)
+        #rows = self.app.db.cursor.fetchall()
+        #tags = [row.tagname for row in rows]
         for tagname in tags:
             print 'adding', tagname, 'to list'
             KListViewItem(self.frame.listView, tagname)
@@ -197,20 +216,21 @@ class AddTagsDialog(BaseTagsDialog):
         items = self.frame.listView.selectedItems()
         for item in items:
             tagname = str(item.text(0))
-            self.app.db.tag(self.entityid, tagname)
+            self.app.db.tag(self.entity.entityid, tagname)
             
         
 class RemoveTagsDialog(BaseTagsDialog):
-    def __init__(self, parent, entityid, name='RemoveTagsDialog'):
-        BaseTagsDialog.__init__(self, parent, entityid, name=name)
-        for tagname in self.app.db.get_tags(self.entityid):
-            KListViewItem(self.frame.listView, tagname)
+    def __init__(self, parent, entity, name='RemoveTagsDialog'):
+        BaseTagsDialog.__init__(self, parent, entity, name=name)
+        for tag in entity.tags:
+            KListViewItem(self.frame.listView, tag.tagname)
         self.connect(self, SIGNAL('okClicked()'), self.remove_tags)
 
     def remove_tags(self):
         items = self.frame.listView.selectedItems()
         for item in items:
             tagname = str(item.text(0))
-            self.app.db.delete_tag(tagname, self.entityid)
+            self.app.db.untag(self.entity, tagname)
+            
             
             
