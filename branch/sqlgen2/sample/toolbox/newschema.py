@@ -1,4 +1,3 @@
-from sqlalchemy import sql
 from sqlalchemy import Table, Column, ColumnDefault
 from sqlalchemy.schema import MetaData, ForeignKey
 from sqlalchemy.types import Integer, String, Text, Date
