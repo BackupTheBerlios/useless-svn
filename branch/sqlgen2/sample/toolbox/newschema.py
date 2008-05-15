@@ -76,7 +76,10 @@ class Entity(BaseDbObject):
     pass
 
 class EntityExtraField(BaseDbObject):
-    pass
+    def __init__(self, entityid=None, fieldname=None, value=None):
+        self.entityid = entityid
+        self.fieldname = fieldname
+        self.value = value
 
 class ExtraField(BaseDbObject):
     def __init__(self, etype, fieldname, fieldtype='name'):
@@ -105,7 +108,8 @@ mapper(Entity, metadata.tables['entities'],
     'etype' : relation(EntityType),
     'tags': relation(Tag, secondary=metadata.tables['entitytags']),
     'extfields' : relation(EntityExtraField,
-                           collection_class=column_mapped_collection(metadata.tables['entity_extfields'].c.fieldname))
+                           collection_class=column_mapped_collection(metadata.tables['entity_extfields'].c.fieldname)),
+    'extfieldlist' : relation(EntityExtraField)
     },
        allow_column_override=True
        )

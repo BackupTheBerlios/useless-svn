@@ -2,6 +2,8 @@ import re
 import urlparse
 import subprocess
 
+from sqlalchemy.exceptions import InvalidRequestError
+
 from useless.base.path import path
 
 from base import Url
@@ -123,17 +125,26 @@ class MainUrlHandler(BaseUrlHandler):
     def handle_youtube_url(self, url):
         match = youtube_url_re.match(url)
         youtubeid = match.group(2)
-        if not self.db.extvalue_exists('youtubeid', youtubeid):
-            self._do_youtube_job(youtubeid, url)
-        else:
-            entityid = self.db.get_id_by_extras(dict(youtubeid=youtubeid))
-            rows = self.db.get_extra_fields(entityid)
-            data = dict([(r.fieldname, r.value) for r in rows])
-            key = 'local-copy'
-            lc = data['local-copy']
-            if lc == 'False':
-                self._do_youtube_job(youtubeid, url, entityid=entityid)
-                
+        eef = self.db.EntityExtraField
+        query = self.db.session.query(eef)
+        extfield_query = query.filter(eef.fieldname == 'youtubeid').filter(eef.value == youtubeid)
+        try:
+            extfield = extfield_query.one()
+        except InvalidRequestError, inst:
+            # we expect this error
+            if inst.message == 'No rows returned for one()':
+                self._do_youtube_job(youtubeid, url)
+                return 
+            # but reraise others
+            else:
+                raise inst
+        id_filter = query.filter(eef.entityid == extfield.entityid)
+        lc_query = id_filter.filter(eef.fieldname == 'local-copy')
+        lc = bool(int(lc_query.one().value))
+        if not lc:
+            print "self._do_youtube_job"
+            self._do_youtube_job(youtubeid, url, entityid=extfield.entityid)
+            
             
             
     def handle_job(self, job):

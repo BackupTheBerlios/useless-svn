@@ -128,29 +128,46 @@ class MainWindow(BaseMainWindow, MainDropCatcher):
                 main = dict()
                 data = self.app.urlhandler.retrieve_data(url)
                 if data.has_key('entityid') and data['entityid'] is None:
-                    main['name'] = data['title']
-                    main['type'] = 'youtube-video'
-                    main['desc'] = 'Youtube video'
-                    main['url'] = url
-                    extras = dict()
-                    extras['youtubeid'] = data['youtubeid']
+                    entity = self.app.db.Entity()
+                    entity.name = data['title']
+                    entity.type = 'youtube-video'
+                    entity.desc = 'Youtube video'
+
+                    # I don't seem to be able to add the relations to the object
+                    # without flushing the session to get the new entityid
+                    self.app.db.session.flush()
+                    entityid = entity.entityid
+                    EntityExtraField = self.app.db.EntityExtraField
+
+                    entity.extfieldlist.append(EntityExtraField(entityid, 'youtubeid',data['youtubeid']))
+
                     # default to not there
-                    extras['local-copy'] = False
+                    entity.extfieldlist.append(EntityExtraField(entityid, 'local-copy', False))
+
                     # normalize title similar to youtube-dl
                     filename = self._make_youtube_dl_filename(data['youtubeid'], data['title'])
+
                     # add filename to extras
-                    extras['local-filename'] = filename
+                    entity.extfieldlist.append(EntityExtraField(entityid, 'local-filename', filename))
+                    
                     # create entity
-                    dbdata = dict(main=main, extras=extras, tags=list())
-                    self.app.db.create_entity(dbdata)
+                    self.app.db.session.save(entity)
+                    # do we need to flush()?
+                    #self.app.db.session.flush()
+
                     download = True
                 else:
                     entityid = data['entityid']
-                    lc = self.app.db.get_extra_field_data(entityid, 'local-copy')
-                    
+                    db = self.app.db
+                    eef = db.EntityExtraField
+                    query = db.session.query(eef)
+                    eef_filter = query.filter(eef.entityid == entityid)
+                    query = eef_filter.filter(eef.fieldname == 'local-copy')
+                    lc = query.one().value
                     if lc == 'False':
                         download = True
-                        filename = self.app.db.get_extra_field_data(entityid, 'local-filename')
+                        query = eef_filter.filter(eef.fieldname == 'local-filename')
+                        filename = query.one().value
                 if download:
                     # download youtube video
                     self.app.filehandler.download(data['flv_url'], filename)
