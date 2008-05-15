@@ -14,7 +14,8 @@ from useless.base import debug
 
 from path import path
 
-from defaults import BLOCK_SIZE
+from defaults import BLOCK_SIZE, BYTE_UNITS
+
 
 class ShellError(OSError):
     pass
@@ -96,6 +97,10 @@ def shell(cmd):
         raise ShellError, '%s returned %d' % (cmd, retval)
 
 def makepaths(*dirs):
+    """This calls os.makedirs on all arguments.
+    This function won't raise an exception on
+    making an existing directory.
+    """
     for adir in paths:
         try:
             os.makedirs(adir)
@@ -156,7 +161,11 @@ def md5sum(afile):
     return m.hexdigest()
 
 class _zipPipe(PipeTemplate):
-    """This class shouldn't be instantiated
+    """This class, and it's subclasses,
+    GzipPipe and BzipPipe will be deprecated
+    in favor of using the subprocess module
+    to handle piping.
+    This class shouldn't be instantiated
     directly, but sublassed with a command
     that de/compresses from stdin to stdout.
     """
@@ -167,10 +176,16 @@ class _zipPipe(PipeTemplate):
         self.append(cmd, '--')
         
 class GzipPipe(_zipPipe):
+    """This class will be deprecated
+    in favor of using the subprocess module
+    to handle piping."""
     def __init__(self, decompress=False):
         _zipPipe.__init__(self, 'gzip', decompress)
 
 class BzipPipe(_zipPipe):
+    """This class will be deprecated
+    in favor of using the subprocess module
+    to handle piping."""
     def __init__(self, decompress=False):
         _zipPipe.__init__(self, 'bzip2', decompress)
         
@@ -383,7 +398,9 @@ def runlog(command, destroylog=False,
                           sysstream[stream].fileno()]
     for stream  in sysstream:
         os.dup2(newstream[stream].fileno(), backup[stream][1])
+    
     run = os.system(command)
+    
     if run and not keeprunning:
         raise RuntimeError, 'error in command %s , check %s' % (command, logfile)
     for stream in sysstream:
@@ -405,7 +422,9 @@ def runlog_script(command, destroylog=False,
         print 'ignoring destroylog'
     logfile = os.environ[logvar]
     cmd  = '%s -c "%s" %s' % (scriptcmd, command, logfile)
+    #cmd = [scriptcmd, '-c', command, logfile]
     run = os.system(cmd)
+    #run = subprocess.call(cmd)
     if run and not keeprunning:
         raise RuntimeError, 'error in command %s , check %s' % (command, logfile)
     return run
@@ -433,9 +452,18 @@ def excepthook_message(type, value, tracebackobj):
     return msg
 
 class Url(str):
-    def __init__(self, url):
+    """This class is useful for parsing and unparsing
+    urls, and having attribute access to a parsed url.
+    attributes are protocol, host, path, parameters, query, and frag_id.
+    """
+    
+    def __init__(self, url=''):
         str.__init__(self, str(url))
         self.url_orig = url
+        self.seturl(url)
+        
+    def seturl(self, url):
+        """Uses urlparse to set the attributes for url"""
         url = str(url)
         protocol, host, path_, parameters, query, frag_id = urlparse.urlparse(url)
         self.protocol = protocol
@@ -446,13 +474,22 @@ class Url(str):
         self.frag_id = frag_id
 
     def astuple(self):
+        """return url as tuple from urlparse"""
         return (self.protocol, self.host, self.path, self.parameters,
                 self.query, self.frag_id)
 
     def asdict(self):
+        """return url as a dictionary where the url attributes are keys"""
         return dict(protocol=self.protocol, host=self.host, path=self.path,
                     parameters=self.parameters, query=self.query, frag_id=self.frag_id)
-    
+
+    def set_path(self, path_):
+        """Method for setting the path attribute, and coercing it to be
+        a path instance."""
+        if not isinstance(path_, path):
+            path_ = path(path_)            
+        self.path = path_
+        
     def output(self):
         return str(urlparse.urlunparse(self.astuple()))
 
@@ -465,6 +502,19 @@ class Url(str):
     def __eq__(self, other):
         return other.__eq__(self.output())
     
+
+def format_bytes(bytes, format='%2.1f', split=True):
+    power = 0
+    block = 1024
+    while bytes > block:
+        bytes /= float(block)
+        power += 1
+    value = format % bytes
+    unit = BYTE_UNITS[power]
+    if split:
+        return value, unit
+    else:
+        return '%s %s' % (value, unit)
     
 if __name__ == '__main__':
     print 'hello'

@@ -15,11 +15,14 @@ def get_application_pointer():
     return KApplication.kApplication()
 
 class BaseDialogWindow(KDialogBase):
+    'This object has an "app" attribute for the application'
     def __init__(self, parent, name='BaseDialogWindow'):
         KDialogBase.__init__(self, parent, name)
         self.app = get_application_pointer()
         
 class VboxDialog(BaseDialogWindow):
+    '''This dialog has a QFrame at self.frame and
+    a QVBoxLayout at self.vbox'''
     def __init__(self, parent, name='VboxDialog'):
         BaseDialogWindow.__init__(self, parent, name=name)
         self.frame = QFrame(self)
@@ -29,6 +32,7 @@ class VboxDialog(BaseDialogWindow):
         self.vbox = QVBoxLayout(self.frame, margin, spacing)
 
 class BaseAssigner(VboxDialog):
+    '''This dialog has a KActionSelector at self.listBox'''
     def __init__(self, parent, name='BaseAssigner', udbuttons=False):
         VboxDialog.__init__(self, parent, name=name)
         self.listBox = KActionSelector(self.frame)
@@ -41,6 +45,9 @@ class BaseAssigner(VboxDialog):
         raise NotImplementedError, 'initView not implemented in base class'
     
 class BaseRecordDialog(BaseDialogWindow):
+    """This dialog has a BaseRecordFrame at self.frame.  It takes,
+    as arguments, an ordered list of fields, and a dictionary containing
+    at least those fields and it's values."""
     def __init__(self, parent, fields, record=None, name='BaseRecordDialog'):
         BaseDialogWindow.__init__(self, parent, name=name)
         text = 'This is a base record dialog.'
