@@ -18,7 +18,7 @@ class AutoId(Column):
 
     def __write__(self):
         col = '%s' % self.name
-        col += ' INTEGER AUTOINCREMENT'
+        col += ' INTEGER'
         return col
 
 class GuestTable(Table):

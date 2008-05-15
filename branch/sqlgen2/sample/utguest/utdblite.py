@@ -1,12 +1,21 @@
 import os
+import datetime
 #from sqlite.main import Connection, Cursor
-from useless.db.lowlevel import LocalConnection
+from sqlite3 import Connection as LocalConnection
+from sqlite3 import Row
+#from useless.db.lowlevel import LocalConnection
 from useless.db.midlevel import StatementCursor
+from useless.db.lowlevel import tquery_lite
+
 
 from useless.sqlgen.clause import Eq
 
+from useless.base.path import path
+
 from utbase import parse_wtprn_m3u_url
 from utdbschema import generate_schema
+from utguestxml import GuestElement
+from utguestxml import GuestElementParser
 
 DOUBLE_BS = '\\'
 SINGLE_BS = DOUBLE_BS[0]
@@ -14,13 +23,69 @@ ESCAPED_ENDL = DOUBLE_BS + 'n'
 def unescape_text(text):
     return text.replace(ESCAPED_ENDL, '\n')
 
+def datefromstring(dstring):
+    return datetime.date(*map(int, dstring.split('-')))
+
+def attribute_factory(cursor, row):
+    rs = ResultSet(row)
+    rs.setup_cursor(cursor)
+    return rs
+
+class ResultSetRow(Row):
+    def __init__(self, cursor, row):
+        Row.__init__(self, cursor, row)
+        self._cursor = cursor
+
+    def __getattr__(self, attr):
+        return Row.__getitem__(self, attr)
+
+    def __repr__(self):
+        rowtuple = tuple(self[index] for index in range(len(self)))
+        return '%s%s' % (self.__class__.__name__, str(rowtuple))
+    
+
+class ResultSet(tuple):
+    def __init__(self, row):
+        tuple.__init__(self, row)
+        self._orig_row = row
+        
+    def setup_cursor(self, cursor):
+        self._cursor = cursor
+        self._dict = dict()
+        for idx, col in enumerate(cursor.description):
+            attr = col[0]
+            value = self[idx]
+            #print 'attr, value', attr, value
+            setattr(self, attr, value)
+            self._dict[attr] = value
+
+    def __getitem__(self, key):
+        if type(key) is int:
+            return tuple.__getitem__(self, key)
+        else:
+            return self._dict[key]
+    
+
+class tt(tuple):
+    def __init__(self, row, ignore=True):
+        tuple.__init__(self, row)
+        
 class Connection(LocalConnection):
     def __init__(self, dbname='test.db', autocommit=1, encoding='utf-8'):
-        LocalConnection.__init__(self, dbname=dbname, autocommit=autocommit,
-                                 encoding=encoding)
+        isolation_level = ''
+        if autocommit:
+            isolation_level = None
+        LocalConnection.__init__(self, dbname, isolation_level=isolation_level)
+        #self.row_factory = ResultSet
+        #self.row_factory = attribute_factory
+        #self.row_factory = Row
+        self.row_factory = ResultSetRow
         
     def stmtcursor(self):
-        return StatementCursor(self)
+        cursor = StatementCursor(self)
+        cursor.__dbtype__ = 'lite'
+        cursor.__tquery__ = tquery_lite
+        return cursor
 
 
 class Guests(object):
@@ -123,14 +188,86 @@ class Guests(object):
         clause = Eq('guestid', guestid)
         order = ['all_pictures.pixnum']
         return cursor.select(table=table, clause=clause, order=order)
+
+    def get_guest_picture_filenames(self, guestid):
+        return [row['all_pictures.filename'] for row in self.get_guest_pictures(guestid)]
+    
+    def export_guest_xml(self, guestid, picturepath):
+        picturepath = path(picturepath)
+        data = self.get_guest_data(guestid)
+        element = GuestElement()
+        for att in ['firstname', 'lastname', 'salutation']:
+            value = data[att]
+            if value is None:
+                value = ''
+            element.setAttribute(att, value)
+        if data['title'] is not None:
+            element.title_element.set(data['title'])
+        if data['description'] is not None:
+            element.desc_element.set(data['description'])
+        for row in self.get_appearances(guestid):
+            element.appearances.add_appearance(row['showdate'].date)
+        for row in self.get_guest_works(guestid):
+            url = row['all_works.url']
+            wtype = row['all_works.type']
+            title = row['all_works.title']
+            description = row['all_works.description']
+            element.works.add_work(url=url, type=wtype, title=title, description=description)
+        for filename in self.get_guest_picture_filenames(guestid):
+            element.pictures.add_picture(picturepath / filename)
+        return element
     
 
+    def _get_guestid(self, firstname, lastname):
+        cursor = self.conn.stmtcursor()
+        clause = Eq('firstname', firstname) & Eq('lastname', lastname)
+        table = 'guests'
+        rows = cursor.select(table=table, clause=clause)
+        if not rows or len(rows) > 1:
+            raise RuntimeError, 'Guest not imported'
+        return rows[0]['guestid']
+        
+    def _wtprn_url_dates(self, date):
+        year = str(date.year)
+        year2 = '%02d' % (date.year % 100)
+        month2 = '%02d' % date.month
+        day2 = '%02d' % date.day
+        wday = date.strftime('%a')
+        return year, year2, month2, day2, wday
     
-    ###########################
-    # helper methods          #
-    ###########################
-    def unescape_text(self, text):
-        return unescape_text(text)
+    def _base_wtprn_url(self, date):
+        year, year2, month2, day2, wday = self._wtprn_url_dates(date)
+        url = 'http://mp3.wtprn.com/Albrecht/%s%s/' % ( year2, month2)
+        return url
+
+    
+    def _wtprn_file(self, date, ext):
+        year, year2, month2, day2, wday = self._wtprn_url_dates(date)
+        base = self._base_wtprn_url(date)
+        filename = '%s%s%s_%s_Albrecht.%s' % (year, month2, day2, wday, ext)
+        return base + filename
+
+    def import_guest_xml(self, filename, picturepath):
+        parser = GuestElementParser()
+        parser.parse_file(filename)
+        self.insert_guest_data(parser.main_row)
+        firstname = parser.main_row['firstname']
+        lastname = parser.main_row['lastname']
+        guestid = self._get_guestid(firstname, lastname)
+        for appearance in parser.appearances:
+            appearance = datefromstring(appearance)
+            m3u = self._wtprn_file(appearance, 'm3u')
+            self.insert_new_appearance(guestid, m3u)
+        for work in parser.works:
+            self.insert_new_work(guestid, work)
+        for picture in parser.pictures:
+            self.insert_new_picture(guestid, dict(filename=picture['filename']))
+            filename = picturepath / picture['filename']
+            pfile = filename.open('w')
+            pfile.write(picture['data'])
+            pfile.close()
+            
+        
     
 if __name__ == '__main__':
     import os
@@ -140,13 +277,21 @@ if __name__ == '__main__':
     conn = Connection(dbname=dbfile,
                       autocommit=True, encoding='ascii')
     cursor = conn.stmtcursor()
-    from utdbschema import GuestTable, GuestWorks
     cursor.set_table('guests')
-    unt = unescape_text
+    picturepath = path(dbfile).dirname()
+    g = Guests(conn)
+    x = g.export_guest_xml(12, picturepath)
+    from StringIO import StringIO
+    xf = StringIO()
+    data = x.toxml('utf-8')
+    xf.write(data)
+    xf.seek(0)
+    gep = GuestElementParser()
+    gep.parse_file(xf)
+    
     
     # using this to make the html page for kma
     from utdoc import AllGuestsDoc
-    from utdblite import Guests
     # we need a fake app class to get the
     # doc object to work correctly
     class FakeApp(object):

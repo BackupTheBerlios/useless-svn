@@ -181,7 +181,7 @@ class BaseGuestDataFrame(QFrame):
             self.title_entry.setText(data['title'])
         if data['description']:
             desc = data['description']
-            desc = self.app.guests.unescape_text(desc)
+            #desc = self.app.guests.unescape_text(desc)
             self.desc_entry.setText(desc)
             
     

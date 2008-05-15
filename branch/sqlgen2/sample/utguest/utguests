@@ -5,7 +5,9 @@ os.environ['_USELESS_DB_BACKEND'] = 'sqlite'
 
 from kdecore import KCmdLineArgs
 
-from utbase import excepthook
+#from utbase import excepthook
+from useless.kdebase.error import excepthook
+
 from utapp import MainApplication, AboutData
 
 from utmainwin import MainWindow

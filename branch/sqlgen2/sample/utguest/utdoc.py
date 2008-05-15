@@ -54,15 +54,15 @@ class GuestWorksTable(Table):
             # the result is from a table join
             # so the row elements are in the form
             # table.column
-            title = row['all_works.title']
-            url = row['all_works.url']
-            wtype = row['all_works.type']
+            title = row['title'].encode()
+            url = row['url'].encode()
+            wtype = row['type'].encode()
             work_anchor = Anchor(title, href=url)
             cell = TableCell(wtype, colspan=1)
             trow = TableRow(cell)
             cell = TableCell(work_anchor, colspan=3)
             trow.append(cell)
-            workid = row['all_works.workid']
+            workid = row['workid']
             edit_anchor = Anchor('edit',
                                  href='work||edit||%d' % workid)
             trow.append(TableCell(edit_anchor, colspan=1))
@@ -74,21 +74,21 @@ class GuestTable(BaseMainTable):
         guests_db = self.app.guests
         data = guests_db.get_guest_data(guestid)
         name = '%s %s' % (data['firstname'], data['lastname'])
-        fullname = TableHeader(name, colspan=0, align='center')
+        fullname = TableHeader(name.encode(), colspan=0, align='center')
         fullname_row = TableRow(fullname)
         edit_anchor = Anchor('edit',
                              href='guest||edit||%d' % guestid)
         cell = TableCell(edit_anchor)
         fullname_row.append(cell)
         self.set(fullname_row)
-        title = data['title']
+        title = data['title'].encode()
         if title:
             title = TableCell(title, colspan=2)
             title_row = TableRow(title)
             self.append(title_row)
-        desc = data['description']
+        desc = data['description'].encode()
         if desc:
-            desc = self.app.guests.unescape_text(desc)
+            #desc = self.app.guests.unescape_text(desc)
             text  = Text(desc)
             text.set_rawtext(True)
             #print text._content
@@ -175,7 +175,7 @@ class GuestTable(BaseMainTable):
         if pictures:
             datadir = self.app.datadir
             for row in pictures:
-                filename = row['all_pictures.filename']
+                filename = row['filename'].encode()
                 fullpath = os.path.join(datadir, filename)
                 image = Image(src=fullpath, width='100', height='100')
                 cell = TableCell(image)

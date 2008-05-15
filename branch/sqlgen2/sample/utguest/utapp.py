@@ -13,6 +13,7 @@ from kdeui import KMessageBox
 
 from utdblite import Connection, Guests
 from utdbschema import generate_schema
+from useless.base.path import path
 
 # about this program
 class AboutData(KAboutData):
@@ -57,10 +58,10 @@ class MainApplication(KApplication):
     # config file to the regular config location
     def _setup_standard_directories(self):
         self._std_dirs = KStandardDirs()
-        self.tmpdir_parent = str(self._std_dirs.findResourceDir('tmp', '/'))
-        self.datadir_parent = str(self._std_dirs.findResourceDir('data', '/'))
-        self.tmpdir = os.path.join(self.tmpdir_parent, 'utguests')
-        self.datadir = os.path.join(self.datadir_parent, 'utguests')
+        self.tmpdir_parent = path(str(self._std_dirs.findResourceDir('tmp', '/')))
+        self.datadir_parent = path(str(self._std_dirs.findResourceDir('data', '/')))
+        self.tmpdir = self.tmpdir_parent / 'utguests'
+        self.datadir = self.datadir_parent / 'utguests'
         # we need this in dosbox object (for now)
         self.main_config_dir = self.datadir
         if not os.path.exists(self.datadir):
