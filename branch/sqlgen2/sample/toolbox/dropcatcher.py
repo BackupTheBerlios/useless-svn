@@ -4,7 +4,8 @@ import subprocess
 from useless.base.path import path
 
 from qt import QStringList
-from qt import QUriDrag
+from qt import QUriDrag, QTextDrag
+
 
 from kdeui import KMessageBox
 
@@ -14,7 +15,7 @@ class Process(subprocess.Popen):
 class BaseDropCatcher(object):
     def dragEnterEvent(self, event):
         event.accept(QUriDrag.canDecode(event))
-
+        
     def _handle_drop_event(self, event):
         qlist = QStringList()
         if QUriDrag.decodeToUnicodeUris(event, qlist):

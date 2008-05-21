@@ -19,7 +19,7 @@ class NewRadioWindowAction(BaseAction):
         
 class NewRtorrentWindowAction(BaseAction):
     def __init__(self, slot, parent):
-        item = BaseItem('Open a new rtorrent window', 'bittorrent',
+        item = BaseItem('Open a new rtorrent window', 'bt',
                         'Open a new rtorrent window', 'Open a new rtorrent window')
         BaseAction.__init__(self, item, slot, parent, 'NewRtorrentWindow')
         

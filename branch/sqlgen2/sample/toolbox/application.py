@@ -14,10 +14,9 @@ from kdeui import KMessageBox
 
 from dcopexport import DCOPExObj
 
-#from dblite import Connection, EntityManager
 from newschema import EntityManager
 
-from urlhandler import MainUrlHandler
+from urlhandler.main import MainUrlHandler
 from filehandler import BaseFileHandler
 
 class ToolBoxDCOPInterface(DCOPExObj):

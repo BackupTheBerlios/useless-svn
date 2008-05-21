@@ -7,6 +7,7 @@ from kdeui import KStdAction
 from kdeui import KPopupMenu
 
 from windows import BaseToolboxWindow
+from dropcatcher import MainDropCatcher
 
 from actions import NewTagAction
 from infopart import RtorrentInfoPart
@@ -16,7 +17,8 @@ from dialogs import NewTagDialog
 
 from xmlrpc import Rtorrent, Server
 
-class BaseRtorrentWindow(BaseToolboxWindow):
+
+class BaseRtorrentWindow(BaseToolboxWindow, MainDropCatcher):
     def __init__(self, parent, name='MainEntityWindow'):
         BaseToolboxWindow.__init__(self, parent, name=name)
         self.splitView = QSplitter(self, 'splitView')
@@ -46,6 +48,8 @@ class BaseRtorrentWindow(BaseToolboxWindow):
         self.resize(400, 500)
         self.splitView.setSizes([75, 325])
 
+        self.setAcceptDrops(True)
+        
     def initActions(self):
         collection = self.actionCollection()
         self.quitAction = KStdAction.quit(self.close, collection)

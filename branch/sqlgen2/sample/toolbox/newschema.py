@@ -113,18 +113,6 @@ mapper(Entity, metadata.tables['entities'],
        allow_column_override=True
        )
 
-#mapper(Guest, metadata.tables['guests'],
-#       properties={
-#    'works' : relation(Work, secondary=metadata.tables['guest_works']),
-#    'appearances' : relation(Appearance),
-#    'pictures' : relation(Picture, secondary=metadata.tables['guest_pictures'])
-#    }
-#       )
-
-#mapper(Work, metadata.tables['all_works'])
-#mapper(Appearance, metadata.tables['appearances'])
-#mapper(Picture, metadata.tables['all_pictures'])
-
 class EntityManager(object):
     ExtraField = ExtraField
     EntityExtraField = EntityExtraField

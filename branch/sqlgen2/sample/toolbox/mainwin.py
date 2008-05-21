@@ -9,7 +9,6 @@ from qt import QLabel
 from qt import QStringList
 from qt import QUriDrag
 
-from kdeui import KMainWindow
 from kdeui import KListView, KListViewItem
 from kdeui import KMessageBox
 from kdeui import KStdAction
