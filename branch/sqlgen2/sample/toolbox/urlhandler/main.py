@@ -1,7 +1,7 @@
 import re
 import urlparse
 import subprocess
-
+from subprocess import Popen as Process
 from sqlalchemy.exceptions import InvalidRequestError
 
 from useless.base.path import path

@@ -4,8 +4,8 @@ from dcopext import DCOPObj
 from kio import KIO
 
 from useless.base.path import path
+from useless.base.util import Url
 
-from base import Url
 
 class BaseFileHandler(object):
     # app is the KDE application

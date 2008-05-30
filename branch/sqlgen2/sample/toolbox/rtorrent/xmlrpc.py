@@ -142,8 +142,8 @@ class Rtorrent(RemoteObject):
         
     def download_list(self):
         return self.server.download_list()
-    
-    
+
+        
 if __name__ == "__main__":
     s = Server()
     r = Rtorrent(s)

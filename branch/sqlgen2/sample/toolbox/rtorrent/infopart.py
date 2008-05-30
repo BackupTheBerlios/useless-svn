@@ -9,21 +9,22 @@ from useless.kdebase.htmlpart import BaseInfoPart
 
 from base import MyUrl
 
-from infodoc import InfoDoc
+from infodoc import RtorrentDocument
+
 
 class RtorrentInfoPart(BaseInfoPart):
     def __init__(self, parent, name='RtorrentInfoPart'):
         BaseInfoPart.__init__(self, parent, name=name)
         self.clear_view()
-
+        self.doc = RtorrentDocument()
+        
     def set_info(self, infohash):
         self.clear_view()
         self.app.processEvents()
         self.begin()
-        #self.doc.set_info(entityid)
-        #self.entityid = entityid
-        #self.write(self.doc.output())
-        self.write(str(self.app.rtorrent.torrents[infohash]))
+        self.doc.set_torrent(self.app.rtorrent.torrents[infohash])
+        self.infohash = infohash
+        self.write(unicode(self.doc.generate()))
         self.end()
         #self.emit(PYSIGNAL('EntityInfoUpdated'), (entityid,))
         
