@@ -39,7 +39,7 @@ class BaseInfoPart(KHTMLPart, HasDialogs):
     def openURL(self, url):
         if not isinstance(url, KURL):
             url = KURL(url)
-        return BaseInfoPart.openURL(self, url)
+        return KHTMLPart.openURL(self, url)
         
 
     

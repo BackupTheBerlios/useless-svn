@@ -101,7 +101,7 @@ def makepaths(*dirs):
     This function won't raise an exception on
     making an existing directory.
     """
-    for adir in paths:
+    for adir in dirs:
         try:
             os.makedirs(adir)
         except OSError, inst:
