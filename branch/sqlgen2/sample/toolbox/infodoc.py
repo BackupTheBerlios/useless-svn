@@ -3,6 +3,7 @@ import urlparse
 import datetime
 
 
+from useless.base.util import Url
 from useless.base.forgethtml import SimpleDocument
 from useless.base.forgethtml import Anchor, Table
 from useless.base.forgethtml import TableRow, TableCell
@@ -41,8 +42,42 @@ class MainTable(BaseMainTable):
         self.app = app
         
     def set_info(self, entity):
-        db = self.app.db
         self.entityid = entity.entityid
+        print "set_info", entity.type
+        if entity.type == 'youtube-video':
+            print "set_info-> youtube-video"
+            self._set_youtube_video(entity)
+        else:
+            self._set_generic_entity(entity)
+
+    def _set_youtube_video(self, entity):
+        db = self.app.db
+        name = TableHeader(str(entity.name), colspan=2, align='center')
+        name_row = TableRow(name)
+        self.set(name_row)
+        yid = Bold('Youtube ID:  ')
+        cell = TableCell(yid)
+        cell.append(str(entity.extfields['youtubeid'].value))
+        self.append(TableRow(cell))
+        filename = str(entity.extfields['local-filename'].value)
+        filehandler = self.app.filehandler
+        dpath = filehandler.main_path / 'downloads'
+        fullpath = dpath / filename
+        if fullpath.exists():
+            href = myurl.make('play', 'entity', str(entity.entityid))
+            cell = TableCell(Anchor('play', href=href))
+        else:
+            href = myurl.make('download', 'entity', str(entity.entityid))
+            youtubeid = str(entity.extfields['youtubeid'].value)
+            mainhref = Url('http://youtube.com/watch?v=%s' % youtubeid)
+            cell = TableCell(Anchor('download', href=href))
+            cell.append(Anchor("(main url)", href=mainhref))
+        self.append(TableRow(cell))
+        
+        
+
+    def _set_generic_entity(self, entity):
+        db = self.app.db
         #edata = db.get(entityid)
         #main = edata['main']
         #extras = edata['extras']

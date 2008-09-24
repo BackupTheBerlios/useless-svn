@@ -4,7 +4,9 @@ from qt import PYSIGNAL, SIGNAL
 from kdecore import KURL
 from kdeui import KMessageBox
 
+from useless.base.util import Url
 from useless.kdebase.htmlpart import BaseInfoPart
+from useless.kdebase.dcopclient import Kaffeine
 
 from base import get_application_pointer
 from base import MyUrl
@@ -72,6 +74,27 @@ class InfoPart(BaseInfoPart):
         elif action == 'deltag':
             dlg = RemoveTagsDialog(self.dialog_parent, self.current_entity)
             dlg.show()
+        elif action == 'play':
+            print "play", ident
+            kaffeine = Kaffeine()
+            entity = self.current_entity
+            filename = str(entity.extfields['local-filename'].value)
+            filehandler = self.app.filehandler
+            dpath = filehandler.main_path / 'downloads'
+            fullpath = dpath / filename
+            url = 'file://%s' % fullpath
+            kaffeine.openURL(url)
+        elif action == 'download':
+            print "download", ident
+            entity = self.current_entity
+            #print "entity url", entity.url
+            if entity.url is None:
+                url = "http://youtube.com/watch?v=%s" % entity.extfields['youtubeid'].value
+            else:
+                url = entity.url
+            url = Url(url)
+            print "url is", url
+            self.app.urlhandler.handle_youtube_url(url)
         else:
             KMessageBox.error(self.dialog_parent,
                               'Unknown action: %s' % action)

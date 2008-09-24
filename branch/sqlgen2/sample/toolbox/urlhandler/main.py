@@ -72,6 +72,7 @@ class MainUrlHandler(BaseUrlHandler):
         id_filter = query.filter(eef.entityid == extfield.entityid)
         lc_query = id_filter.filter(eef.fieldname == 'local-copy')
         lc = bool(int(lc_query.one().value))
+        print "lc", lc
         if not lc:
             print "self._do_youtube_job"
             self._do_youtube_job(youtubeid, url, entityid=extfield.entityid)

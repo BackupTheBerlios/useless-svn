@@ -27,6 +27,8 @@ class BaseFileHandler(object):
     # download url to filename
     # use main download path
     def download(self, url, filename):
+        print "downloading %s to %s" % (url, filename)
+        print "type(url)", type(url)
         dpath = self.main_path / 'downloads'
         if not dpath.exists():
             dpath.mkdir()

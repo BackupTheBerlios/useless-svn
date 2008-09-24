@@ -145,7 +145,7 @@ class Rtorrent(RemoteObject):
 
         
 if __name__ == "__main__":
-    s = Server()
+    s = Server(url='http://roujin/RPC2')
     r = Rtorrent(s)
     import web
     import web

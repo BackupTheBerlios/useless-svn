@@ -162,13 +162,16 @@ class MainWindow(BaseMainWindow, MainDropCatcher):
                     query = db.session.query(eef)
                     eef_filter = query.filter(eef.entityid == entityid)
                     query = eef_filter.filter(eef.fieldname == 'local-copy')
-                    lc = query.one().value
-                    if lc == 'False':
+                    lc = bool(int(query.one().value))
+                    print "in mainwin, lc is", lc, type(lc)
+                    if not lc:
                         download = True
                         query = eef_filter.filter(eef.fieldname == 'local-filename')
                         filename = query.one().value
                 if download:
                     # download youtube video
+                    flv_url = data['flv_url']
+                    print "download True", filename, flv_url
                     self.app.filehandler.download(data['flv_url'], filename)
                 
         msg = "handled url %s" % ',\n '.join(list(urls))

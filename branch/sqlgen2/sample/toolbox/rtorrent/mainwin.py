@@ -28,7 +28,7 @@ class BaseRtorrentWindow(BaseToolboxWindow, MainDropCatcher):
         self.initMenus()
         self.initToolbar()
         
-        self.app.rtserver = Server()
+        self.app.rtserver = Server(url="http://roujin/RPC2")
         self.app.rtorrent = Rtorrent(self.app.rtserver)
 
         #self._sortby = 'name'
