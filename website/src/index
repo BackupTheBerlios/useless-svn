@@ -1,3 +1,5 @@
+.. -*- mode: rst -*-
+
 Useless_
 ===========
 
@@ -7,22 +9,43 @@ This is the homepage of useless_.
 Overview of packages
 ---------------------
 - **base** - basic modules, most useless packages depend on this one
+
+  + This package some modules/classes/functions that are very stable, 
+    a few that are changed somewhat freqeuently, and some that will be removed 
+    and shouldn't be used at all.
+
+  + This package contains a copy of the forgethtml_ module, which is 
+    distributed under an LGPL license.
+
 - **db** - database modules, these are for both postgresql and sqlite, depends on 
   sqlgen package
-- **debian** - some debian specific modules to help when developing on a debian system
-- **gtk** - GTK+ widgets useing pygtk, this package is no longer being maintained and 
-  will be dropped eventually
-- **kbase** - basic pykde widgets, this section will go through a major overhaul soon
-- **kdb** - pykde widgets for use with sql databases, this package needs to be overhauled
+
+  + The interfaces in this package are very stable and unlikely to change for a while.  
+    This package will likely be deprecated one day in favor of using sqlalchemy_.
+
+- **kdebase** - basic pykde widgets
+
+  + The widgets in this package are not very special, and are probably a waste of 
+    time to try and use.  The interface is subject to change frequently and are 
+    probably unsuitable to be used in your code.
+
+- **kdedb** - pykde widgets for use with sql databases
+
+  + The widgets in this package are not very special, and are probably a waste of 
+    time to try and use.  The interface is subject to change frequently and are 
+    probably unsuitable to be used in your code.
+
 - **sqlgen** - this is probably the best of the useless packages, a pythonic way of 
   handling sql statements.  This package is not feature complete, but it is very useful.
-- **webframe** - this package is used to help build websites using cherrypy and 
-  forgetHTML.  A modified copy of forgetHTML a modified copy of forgetHTML is available 
-  in the package.
-- **xmlgen** - this package was uses xml.dom.minidom to help generate xml files.  It 
-  was used to generate simple HTML before I found forgetHTML.  This package may either 
-  expanded or moved to the base package.  The HTML parts will definitely be removed.
 
+  + The sqlgen package is very stable and has undergone very few changes in its 
+    lifetime.  This is a nice package and works very well with the useless-db package.
+
+Developers who might like to use this code should note that only the db and sqlgen 
+packages are stable enough to be used.  The rest of the code may be useful as a 
+guide or inspiration for your own code.  All of the code, with the exception of the 
+forgethtml_ module is in the public domain, so you can use the code freely in your 
+own projects.
 
 
 Dependencies
@@ -36,7 +59,7 @@ useless is split into multiple packages, each dependent on different packages.
 Intended Audience/Users
 ----------------------------------
 
-Python developers who use Postgresql.
+Python developers who use Postgresql_ and/or PyKDE_
 
 ----------------------
 
@@ -70,9 +93,24 @@ The only documentation available so far, is in the code.  After installing,
 run pydoc -g to browse the api documentation.
 
 
+Overhaul
+-------------
+
+There has been much progress in many areas in the python community that are
+making useless really useless.  The code is very likely to require python 2.5, mainly to 
+use relative imports and make the packages easier to transport into other packages.  The 
+db and sqlgen packages will eventually be replaced by sqlalchemy.  It is likely that I will start 
+using genshi_ instead of forgethtml_ to generate html, yet genshi is somewhat slow, and 
+doesn't try to insure that the html generated is valid.
+
 
 .. _paella: http://paella.berlios.de
 .. _debian: http://debian.org
 .. _useless: http://useless.berlios.de
 .. _svn: svn://svn.berlios.de/useless
 .. _tarball: http://download.berlios.de/useless/useless_0.1.3.tar.gz
+.. _postgresql: http://www.postgresql.org
+.. _pykde: http://www.riverbankcomputing.co.uk/pykde/index.php
+.. _sqlalchemy: http://www.sqlalchemy.org/
+.. _genshi: http://genshi.edgewall.org/
+.. _forgethtml: http://forgethtml.sourceforge.net/

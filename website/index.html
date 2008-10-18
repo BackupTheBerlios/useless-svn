@@ -3,15 +3,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Docutils 0.4.1: http://docutils.sourceforge.net/" />
+<meta name="generator" content="Docutils 0.5: http://docutils.sourceforge.net/" />
 <title>Useless</title>
 <style type="text/css">
 
 /*
-:Author: David Goodger
-:Contact: goodger@users.sourceforge.net
-:Date: $Date: 2005-12-18 01:56:14 +0100 (Sun, 18 Dec 2005) $
-:Revision: $Revision: 4224 $
+:Author: David Goodger (goodger@python.org)
+:Id: $Id: html4css1.css 5196 2007-06-03 20:25:28Z wiemann $
 :Copyright: This stylesheet has been placed in the public domain.
 
 Default cascading style sheet for the HTML output of Docutils.
@@ -117,7 +115,7 @@ div.line-block div.line-block {
   margin-left: 1.5em }
 
 div.sidebar {
-  margin-left: 1em ;
+  margin: 0 0 0.5em 1em ;
   border: medium outset ;
   padding: 1em ;
   background-color: #ffffee ;
@@ -223,8 +221,7 @@ pre.address {
 
 pre.literal-block, pre.doctest-block {
   margin-left: 2em ;
-  margin-right: 2em ;
-  background-color: #eeeeee }
+  margin-right: 2em }
 
 span.classifier {
   font-family: sans-serif ;
@@ -281,9 +278,6 @@ h1 tt.docutils, h2 tt.docutils, h3 tt.docutils,
 h4 tt.docutils, h5 tt.docutils, h6 tt.docutils {
   font-size: 100% }
 
-tt.docutils {
-  background-color: #eeeeee }
-
 ul.auto-toc {
   list-style-type: none }
 
@@ -291,61 +285,93 @@ ul.auto-toc {
 </head>
 <body>
 <div class="document" id="useless">
-<h1 class="title"><a class="reference" href="http://useless.berlios.de">Useless</a></h1>
-<p>This is the homepage of <a class="reference" href="http://useless.berlios.de">useless</a>.</p>
-<div class="section">
-<h1><a id="overview-of-packages" name="overview-of-packages">Overview of packages</a></h1>
+<h1 class="title"><a class="reference external" href="http://useless.berlios.de">Useless</a></h1>
+
+<!-- -*- mode: rst -*- -->
+<p>This is the homepage of <a class="reference external" href="http://useless.berlios.de">useless</a>.</p>
+<div class="section" id="overview-of-packages">
+<h1>Overview of packages</h1>
 <ul class="simple">
-<li><strong>base</strong> - basic modules, most useless packages depend on this one</li>
-<li><strong>db</strong> - database modules, these are for both postgresql and sqlite, depends on
-sqlgen package</li>
-<li><strong>debian</strong> - some debian specific modules to help when developing on a debian system</li>
-<li><strong>gtk</strong> - GTK+ widgets useing pygtk, this package is no longer being maintained and
-will be dropped eventually</li>
-<li><strong>kbase</strong> - basic pykde widgets, this section will go through a major overhaul soon</li>
-<li><strong>kdb</strong> - pykde widgets for use with sql databases, this package needs to be overhauled</li>
-<li><strong>sqlgen</strong> - this is probably the best of the useless packages, a pythonic way of
-handling sql statements.  This package is not feature complete, but it is very useful.</li>
-<li><strong>webframe</strong> - this package is used to help build websites using cherrypy and
-forgetHTML.  A modified copy of forgetHTML a modified copy of forgetHTML is available
-in the package.</li>
-<li><strong>xmlgen</strong> - this package was uses xml.dom.minidom to help generate xml files.  It
-was used to generate simple HTML before I found forgetHTML.  This package may either
-expanded or moved to the base package.  The HTML parts will definitely be removed.</li>
+<li><strong>base</strong> - basic modules, most useless packages depend on this one<ul>
+<li>This package some modules/classes/functions that are very stable,
+a few that are changed somewhat freqeuently, and some that will be removed
+and shouldn't be used at all.</li>
+<li>This package contains a copy of the <a class="reference external" href="http://forgethtml.sourceforge.net/">forgethtml</a> module, which is
+distributed under an LGPL license.</li>
 </ul>
+</li>
+<li><strong>db</strong> - database modules, these are for both postgresql and sqlite, depends on
+sqlgen package<ul>
+<li>The interfaces in this package are very stable and unlikely to change for a while.
+This package will likely be deprecated one day in favor of using <a class="reference external" href="http://www.sqlalchemy.org/">sqlalchemy</a>.</li>
+</ul>
+</li>
+<li><strong>kdebase</strong> - basic pykde widgets<ul>
+<li>The widgets in this package are not very special, and are probably a waste of
+time to try and use.  The interface is subject to change frequently and are
+probably unsuitable to be used in your code.</li>
+</ul>
+</li>
+<li><strong>kdedb</strong> - pykde widgets for use with sql databases<ul>
+<li>The widgets in this package are not very special, and are probably a waste of
+time to try and use.  The interface is subject to change frequently and are
+probably unsuitable to be used in your code.</li>
+</ul>
+</li>
+<li><strong>sqlgen</strong> - this is probably the best of the useless packages, a pythonic way of
+handling sql statements.  This package is not feature complete, but it is very useful.<ul>
+<li>The sqlgen package is very stable and has undergone very few changes in its
+lifetime.  This is a nice package and works very well with the useless-db package.</li>
+</ul>
+</li>
+</ul>
+<p>Developers who might like to use this code should note that only the db and sqlgen
+packages are stable enough to be used.  The rest of the code may be useful as a
+guide or inspiration for your own code.  All of the code, with the exception of the
+<a class="reference external" href="http://forgethtml.sourceforge.net/">forgethtml</a> module is in the public domain, so you can use the code freely in your
+own projects.</p>
 </div>
-<div class="section">
-<h1><a id="dependencies" name="dependencies">Dependencies</a></h1>
+<div class="section" id="dependencies">
+<h1>Dependencies</h1>
 <p>useless is split into multiple packages, each dependent on different packages.</p>
 </div>
 <hr class="docutils" />
-<div class="section">
-<h1><a id="intended-audience-users" name="intended-audience-users">Intended Audience/Users</a></h1>
-<p>Python developers who use Postgresql.</p>
+<div class="section" id="intended-audience-users">
+<h1>Intended Audience/Users</h1>
+<p>Python developers who use <a class="reference external" href="http://www.postgresql.org">Postgresql</a> and/or <a class="reference external" href="http://www.riverbankcomputing.co.uk/pykde/index.php">PyKDE</a></p>
 </div>
 <hr class="docutils" />
-<div class="section">
-<h1><a id="download" name="download">Download</a></h1>
+<div class="section" id="download">
+<h1>Download</h1>
 <p>Currently the best way to obtain useless is through subversion:</p>
 <pre class="literal-block">
 svn checkout svn://svn.berlios.de/useless/trunk useless
 </pre>
-<p><a class="reference" href="svn://svn.berlios.de/useless">svn</a> access (This will work in konqueror.)</p>
-<p>There is also a <a class="reference" href="http://download.berlios.de/useless/useless_0.1.3.tar.gz">tarball</a> of the source available, thought it might be
+<p><a class="reference external" href="svn://svn.berlios.de/useless">svn</a> access (This will work in konqueror.)</p>
+<p>There is also a <a class="reference external" href="http://download.berlios.de/useless/useless_0.1.3.tar.gz">tarball</a> of the source available, thought it might be
 out of date.  Useless doesn't change too much, and the api is pretty stable,
 although probably badly named.</p>
 </div>
 <hr class="docutils" />
-<div class="section">
-<h1><a id="project" name="project">Project</a></h1>
-<p><a class="reference" href="http://developer.berlios.de/projects/useless">project</a> page</p>
+<div class="section" id="project">
+<h1>Project</h1>
+<p><a class="reference external" href="http://developer.berlios.de/projects/useless">project</a> page</p>
 </div>
 <hr class="docutils" />
-<div class="section">
-<h1><a id="documentation" name="documentation">Documentation</a></h1>
+<div class="section" id="documentation">
+<h1>Documentation</h1>
 <p>The only documentation available so far, is in the code.  After installing,
 run pydoc -g to browse the api documentation.</p>
-<p>This <a class="reference" href="http://developer.berlios.de/projects/useless">project</a> is hosted by <a class="reference" href="http://developer.berlios.de"><img alt="berlios" src="http://developer.berlios.de/bslogo.php?group_id=0&amp;type=1" /></a>.</p>
+</div>
+<div class="section" id="overhaul">
+<h1>Overhaul</h1>
+<p>There has been much progress in many areas in the python community that are
+making useless really useless.  The code is very likely to require python 2.5, mainly to
+use relative imports and make the packages easier to transport into other packages.  The
+db and sqlgen packages will eventually be replaced by sqlalchemy.  It is likely that I will start
+using <a class="reference external" href="http://genshi.edgewall.org/">genshi</a> instead of <a class="reference external" href="http://forgethtml.sourceforge.net/">forgethtml</a> to generate html, yet genshi is somewhat slow, and
+doesn't try to insure that the html generated is valid.</p>
+<p>This <a class="reference external" href="http://developer.berlios.de/projects/useless">project</a> is hosted by <a class="reference external" href="http://developer.berlios.de"><img alt="berlios" src="http://developer.berlios.de/bslogo.php?group_id=0&amp;type=1" /></a>.</p>
 </div>
 </div>
 </body>
