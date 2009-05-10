@@ -3,25 +3,93 @@
 Useless_
 ===========
 
+.. contents:: :backlinks: entry
+
 This is the homepage of useless_.
 
 
 Overview of packages
 ---------------------
+
+base
+++++++++
+
 - **base** - basic modules, most useless packages depend on this one
 
   + This package some modules/classes/functions that are very stable, 
     a few that are changed somewhat freqeuently, and some that will be removed 
     and shouldn't be used at all.
 
-  + This package contains a copy of the forgethtml_ module, which is 
-    distributed under an LGPL license.
+  + This package contains a copy of the forgethtml_ module, by Stian Soiland, 
+    which is distributed under an LGPL license.  This module has been modified 
+    to escape text in the Text class, to keep it from being improperly parsed by 
+    the html parser.
+
+  + This package contains a copy of the path_ module, by Jason Orendorff,
+    which is public domain.
+
+  + The xmlfile module has some code that helps generate and parse xml 
+    files, based on Python's minidom package, but there are probably better 
+    ways of doing this these days.  The ElementTree package may be used in 
+    the future.
+
+  + There is a module called "forgenshi", which uses genshi_ to generate html
+    from python objects.  This module is incomplete, and isn't to be used.  This 
+    module may never be complete, as it seems that genshi is far too slow for 
+    generating html from python objects.  The goal of this module is to replace 
+    forgethtml with another html generator backend, using classes with the same 
+    names as forgethtml.
+
+  + The config module has a modified ConfigParser class that allows for dict type 
+    access to a section.  The class can have its section set, then the options and 
+    values can be retrieved (but not set) with dictionary methods.  There are also 
+    some extra methods that are defined.  This module isn't being developed anymore 
+    and will probably be removed some day.
+
+  + The template module has a Template class that uses simple tags to be 
+    substituted from a dictionary.  The Template class is a subclass of a dictionary.  
+    This class is only being used in paella_, and it's a very simple class.  You may wish 
+    to use the Template class that ships with Python in the string module, or use one 
+    of the many other templating engines that are available.
+
+  + The shorewall and authldap modules are not being used anymore.
+
+  + The util and path modules are the most used modules in this package.  
+
+db
++++++++++
 
 - **db** - database modules, these are for both postgresql and sqlite, depends on 
   sqlgen package
 
   + The interfaces in this package are very stable and unlikely to change for a while.  
-    This package will likely be deprecated one day in favor of using sqlalchemy_.
+    This package will likely be deprecated one day in favor of using sqlalchemy_.  Unlike
+    sqlalchemy, the useless sql database code was only focused on what was required 
+    to get the job done in the projects that use useless.  This means that there was no 
+    attempt to make the code platform independent, or to support many of the databases 
+    that could be used.
+
+  + One day, the code should be updated to use sqlite3 instead of sqlite2.
+
+  + The lowlevel module contains the connection classes, and a simple cursor 
+    class that is used in the midlevel module.  The LocalConnection class is used 
+    to connect to sqlite2 databases.  The BasicConnection class is used to connect 
+    to postgresql databases.
+
+  + The midlevel module contains the StatementCursor class.  This class uses the 
+    Statement object from the sqlgen package.  This cursor provides a handy way to 
+    execute simple SQL queries in a mostly pythonic manner.
+
+  + The highlevel module has been reserved for making orm_ type classes, but this 
+    hasn't been realized yet, and probably never will.  Way back when this code was 
+    written, sqlalchemy_ didn't exist, so I started to create my own.
+
+  + The pg_special module has some code that may be useful for people using 
+    postgresql databases.  Much of this code was written while inspecting the 
+    psql client program, learning how to implement some of the "\" commands.
+
+kdebase
++++++++++++++++++
 
 - **kdebase** - basic pykde widgets
 
@@ -29,17 +97,74 @@ Overview of packages
     time to try and use.  The interface is subject to change frequently and are 
     probably unsuitable to be used in your code.
 
+kdedb
++++++++++++++++++++
+
 - **kdedb** - pykde widgets for use with sql databases
 
   + The widgets in this package are not very special, and are probably a waste of 
     time to try and use.  The interface is subject to change frequently and are 
     probably unsuitable to be used in your code.
 
+sqlgen
++++++++++++++++++
+
 - **sqlgen** - this is probably the best of the useless packages, a pythonic way of 
   handling sql statements.  This package is not feature complete, but it is very useful.
 
   + The sqlgen package is very stable and has undergone very few changes in its 
     lifetime.  This is a nice package and works very well with the useless-db package.
+
+  + The classes module has objects that help create the database schema.  The	 
+    table and column objects can handle many common constraints that are used 
+    when making a relational database schema.  Most people seem to use a simple 
+    file written in sql to create the initial database layout.  With the objects in this module, 
+    this can be done straight from Python.  Also, this can be used to make a set of 
+    tables that relate together in an existing database, which may be easier than 
+    just generating the appropriate sql commands.
+
+  + The defaults module has some default column types, column fuctions and tables 
+    that can help when generating a database schema from Python.
+
+  + The clause module contains classes that represent an sql clause.  These clauses 
+    have __and__ and __or__ methods that allow you to chain the clause objects together 
+    in Python using the bitwise and/or operators.  For example::
+
+     >>> from useless.sqlgen.clause import Eq
+     >>> a = Eq('foo', 'bar')
+     >>> b = Eq('room', 24)
+     >>> c = Eq('year', 2112)
+     >>> a & b & c
+     ((foo = 'bar') and (room = 24)) and (year = 2112)
+     >>> a & (b & c)
+     (foo = 'bar') and ((room = 24) and (year = 2112))
+     >>> a & (b | c)
+     (foo = 'bar') and ((room = 24) or (year = 2112))
+
+  + The select and write modules have functions that create simple queries.  These 
+    modules can be used by themselves, but are generally used via the Statement 
+    class in the statement module.
+
+  + The statement module has the Statement class that is capable of generating simple 
+    select, insert, update, and delete queries.  Example::
+
+
+	    >>> from useless.sqlgen.clause import In, Eq
+	    >>> from useless.sqlgen.statement import Statement
+	    >>> clause = Eq('state', 'NC')
+	    >>> s = Statement()
+	    >>> s.table = 'addresses'
+	    >>> s.type = 'update'
+	    >>> s.data = dict(areacode=919)
+	    >>> s
+	    update addresses set areacode = 919
+	    >>> s.clause = clause
+	    >>> s
+	    update addresses set areacode = 919 where state = 'NC'
+	    >>> s.type = 'select'
+	    >>> s
+	    select * from addresses where state = 'NC'
+	    >>>                        
 
 Developers who might like to use this code should note that only the db and sqlgen 
 packages are stable enough to be used.  The rest of the code may be useful as a 
@@ -52,6 +177,38 @@ Dependencies
 --------------------
 
 useless is split into multiple packages, each dependent on different packages.
+
+base
++++++++++
+
+- python-xml
+- python-pycurl
+
+db
++++++++++
+
+- python-useless-sqlgen
+- python-sqlite
+
+kdebase
++++++++++
+
+- python-useless-base
+- python-kde3
+- python-qtext
+
+kdedb
++++++++++
+
+- python-useless-kdebase
+- python-useless-db
+- libqt3-mt-psql
+
+sqlgen
++++++++++
+
+- python-useless-base
+- python-pgsql
 
 
 -----------------------------
@@ -114,3 +271,5 @@ doesn't try to insure that the html generated is valid.
 .. _sqlalchemy: http://www.sqlalchemy.org/
 .. _genshi: http://genshi.edgewall.org/
 .. _forgethtml: http://forgethtml.sourceforge.net/
+.. _path: http://www.jorendorff.com/articles/python/path
+.. _orm: http://en.wikipedia.org/wiki/Object-relational_mapping

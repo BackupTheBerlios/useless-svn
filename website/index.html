@@ -288,40 +288,186 @@ ul.auto-toc {
 <h1 class="title"><a class="reference external" href="http://useless.berlios.de">Useless</a></h1>
 
 <!-- -*- mode: rst -*- -->
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#overview-of-packages" id="id8">Overview of packages</a><ul>
+<li><a class="reference internal" href="#base" id="id9">base</a></li>
+<li><a class="reference internal" href="#db" id="id10">db</a></li>
+<li><a class="reference internal" href="#kdebase" id="id11">kdebase</a></li>
+<li><a class="reference internal" href="#kdedb" id="id12">kdedb</a></li>
+<li><a class="reference internal" href="#sqlgen" id="id13">sqlgen</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dependencies" id="id14">Dependencies</a><ul>
+<li><a class="reference internal" href="#id1" id="id15">base</a></li>
+<li><a class="reference internal" href="#id2" id="id16">db</a></li>
+<li><a class="reference internal" href="#id3" id="id17">kdebase</a></li>
+<li><a class="reference internal" href="#id4" id="id18">kdedb</a></li>
+<li><a class="reference internal" href="#id5" id="id19">sqlgen</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#intended-audience-users" id="id20">Intended Audience/Users</a></li>
+<li><a class="reference internal" href="#download" id="id21">Download</a></li>
+<li><a class="reference internal" href="#project" id="id22">Project</a></li>
+<li><a class="reference internal" href="#documentation" id="id23">Documentation</a></li>
+<li><a class="reference internal" href="#overhaul" id="id24">Overhaul</a></li>
+</ul>
+</div>
 <p>This is the homepage of <a class="reference external" href="http://useless.berlios.de">useless</a>.</p>
 <div class="section" id="overview-of-packages">
-<h1>Overview of packages</h1>
+<h1><a class="toc-backref" href="#id8">Overview of packages</a></h1>
+<div class="section" id="base">
+<h2><a class="toc-backref" href="#id9">base</a></h2>
 <ul class="simple">
 <li><strong>base</strong> - basic modules, most useless packages depend on this one<ul>
 <li>This package some modules/classes/functions that are very stable,
 a few that are changed somewhat freqeuently, and some that will be removed
 and shouldn't be used at all.</li>
-<li>This package contains a copy of the <a class="reference external" href="http://forgethtml.sourceforge.net/">forgethtml</a> module, which is
-distributed under an LGPL license.</li>
+<li>This package contains a copy of the <a class="reference external" href="http://forgethtml.sourceforge.net/">forgethtml</a> module, by Stian Soiland,
+which is distributed under an LGPL license.  This module has been modified
+to escape text in the Text class, to keep it from being improperly parsed by
+the html parser.</li>
+<li>This package contains a copy of the <a class="reference external" href="http://www.jorendorff.com/articles/python/path">path</a> module, by Jason Orendorff,
+which is public domain.</li>
+<li>The xmlfile module has some code that helps generate and parse xml
+files, based on Python's minidom package, but there are probably better
+ways of doing this these days.  The ElementTree package may be used in
+the future.</li>
+<li>There is a module called &quot;forgenshi&quot;, which uses <a class="reference external" href="http://genshi.edgewall.org/">genshi</a> to generate html
+from python objects.  This module is incomplete, and isn't to be used.  This
+module may never be complete, as it seems that genshi is far too slow for
+generating html from python objects.  The goal of this module is to replace
+forgethtml with another html generator backend, using classes with the same
+names as forgethtml.</li>
+<li>The config module has a modified ConfigParser class that allows for dict type
+access to a section.  The class can have its section set, then the options and
+values can be retrieved (but not set) with dictionary methods.  There are also
+some extra methods that are defined.  This module isn't being developed anymore
+and will probably be removed some day.</li>
+<li>The template module has a Template class that uses simple tags to be
+substituted from a dictionary.  The Template class is a subclass of a dictionary.
+This class is only being used in <a class="reference external" href="http://paella.berlios.de">paella</a>, and it's a very simple class.  You may wish
+to use the Template class that ships with Python in the string module, or use one
+of the many other templating engines that are available.</li>
+<li>The shorewall and authldap modules are not being used anymore.</li>
+<li>The util and path modules are the most used modules in this package.</li>
 </ul>
 </li>
+</ul>
+</div>
+<div class="section" id="db">
+<h2><a class="toc-backref" href="#id10">db</a></h2>
+<ul class="simple">
 <li><strong>db</strong> - database modules, these are for both postgresql and sqlite, depends on
 sqlgen package<ul>
 <li>The interfaces in this package are very stable and unlikely to change for a while.
-This package will likely be deprecated one day in favor of using <a class="reference external" href="http://www.sqlalchemy.org/">sqlalchemy</a>.</li>
+This package will likely be deprecated one day in favor of using <a class="reference external" href="http://www.sqlalchemy.org/">sqlalchemy</a>.  Unlike
+sqlalchemy, the useless sql database code was only focused on what was required
+to get the job done in the projects that use useless.  This means that there was no
+attempt to make the code platform independent, or to support many of the databases
+that could be used.</li>
+<li>One day, the code should be updated to use sqlite3 instead of sqlite2.</li>
+<li>The lowlevel module contains the connection classes, and a simple cursor
+class that is used in the midlevel module.  The LocalConnection class is used
+to connect to sqlite2 databases.  The BasicConnection class is used to connect
+to postgresql databases.</li>
+<li>The midlevel module contains the StatementCursor class.  This class uses the
+Statement object from the sqlgen package.  This cursor provides a handy way to
+execute simple SQL queries in a mostly pythonic manner.</li>
+<li>The highlevel module has been reserved for making <a class="reference external" href="http://en.wikipedia.org/wiki/Object-relational_mapping">orm</a> type classes, but this
+hasn't been realized yet, and probably never will.  Way back when this code was
+written, <a class="reference external" href="http://www.sqlalchemy.org/">sqlalchemy</a> didn't exist, so I started to create my own.</li>
+<li>The pg_special module has some code that may be useful for people using
+postgresql databases.  Much of this code was written while inspecting the
+psql client program, learning how to implement some of the &quot;&quot; commands.</li>
 </ul>
 </li>
+</ul>
+</div>
+<div class="section" id="kdebase">
+<h2><a class="toc-backref" href="#id11">kdebase</a></h2>
+<ul class="simple">
 <li><strong>kdebase</strong> - basic pykde widgets<ul>
 <li>The widgets in this package are not very special, and are probably a waste of
 time to try and use.  The interface is subject to change frequently and are
 probably unsuitable to be used in your code.</li>
 </ul>
 </li>
+</ul>
+</div>
+<div class="section" id="kdedb">
+<h2><a class="toc-backref" href="#id12">kdedb</a></h2>
+<ul class="simple">
 <li><strong>kdedb</strong> - pykde widgets for use with sql databases<ul>
 <li>The widgets in this package are not very special, and are probably a waste of
 time to try and use.  The interface is subject to change frequently and are
 probably unsuitable to be used in your code.</li>
 </ul>
 </li>
-<li><strong>sqlgen</strong> - this is probably the best of the useless packages, a pythonic way of
-handling sql statements.  This package is not feature complete, but it is very useful.<ul>
-<li>The sqlgen package is very stable and has undergone very few changes in its
-lifetime.  This is a nice package and works very well with the useless-db package.</li>
+</ul>
+</div>
+<div class="section" id="sqlgen">
+<h2><a class="toc-backref" href="#id13">sqlgen</a></h2>
+<ul>
+<li><p class="first"><strong>sqlgen</strong> - this is probably the best of the useless packages, a pythonic way of
+handling sql statements.  This package is not feature complete, but it is very useful.</p>
+<ul>
+<li><p class="first">The sqlgen package is very stable and has undergone very few changes in its
+lifetime.  This is a nice package and works very well with the useless-db package.</p>
+</li>
+<li><p class="first">The classes module has objects that help create the database schema.  The
+table and column objects can handle many common constraints that are used
+when making a relational database schema.  Most people seem to use a simple
+file written in sql to create the initial database layout.  With the objects in this module,
+this can be done straight from Python.  Also, this can be used to make a set of
+tables that relate together in an existing database, which may be easier than
+just generating the appropriate sql commands.</p>
+</li>
+<li><p class="first">The defaults module has some default column types, column fuctions and tables
+that can help when generating a database schema from Python.</p>
+</li>
+<li><p class="first">The clause module contains classes that represent an sql clause.  These clauses
+have __and__ and __or__ methods that allow you to chain the clause objects together
+in Python using the bitwise and/or operators.  For example:</p>
+<pre class="literal-block">
+&gt;&gt;&gt; from useless.sqlgen.clause import Eq
+&gt;&gt;&gt; a = Eq('foo', 'bar')
+&gt;&gt;&gt; b = Eq('room', 24)
+&gt;&gt;&gt; c = Eq('year', 2112)
+&gt;&gt;&gt; a &amp; b &amp; c
+((foo = 'bar') and (room = 24)) and (year = 2112)
+&gt;&gt;&gt; a &amp; (b &amp; c)
+(foo = 'bar') and ((room = 24) and (year = 2112))
+&gt;&gt;&gt; a &amp; (b | c)
+(foo = 'bar') and ((room = 24) or (year = 2112))
+</pre>
+</li>
+<li><p class="first">The select and write modules have functions that create simple queries.  These
+modules can be used by themselves, but are generally used via the Statement
+class in the statement module.</p>
+</li>
+<li><p class="first">The statement module has the Statement class that is capable of generating simple
+select, insert, update, and delete queries.  Example:</p>
+<pre class="literal-block">
+&gt;&gt;&gt; from useless.sqlgen.clause import In, Eq
+&gt;&gt;&gt; from useless.sqlgen.statement import Statement
+&gt;&gt;&gt; clause = Eq('state', 'NC')
+&gt;&gt;&gt; s = Statement()
+&gt;&gt;&gt; s.table = 'addresses'
+&gt;&gt;&gt; s.type = 'update'
+&gt;&gt;&gt; s.data = dict(areacode=919)
+&gt;&gt;&gt; s
+update addresses set areacode = 919
+&gt;&gt;&gt; s.clause = clause
+&gt;&gt;&gt; s
+update addresses set areacode = 919 where state = 'NC'
+&gt;&gt;&gt; s.type = 'select'
+&gt;&gt;&gt; s
+select * from addresses where state = 'NC'
+&gt;&gt;&gt;
+</pre>
+</li>
 </ul>
 </li>
 </ul>
@@ -331,18 +477,56 @@ guide or inspiration for your own code.  All of the code, with the exception of 
 <a class="reference external" href="http://forgethtml.sourceforge.net/">forgethtml</a> module is in the public domain, so you can use the code freely in your
 own projects.</p>
 </div>
+</div>
 <div class="section" id="dependencies">
-<h1>Dependencies</h1>
+<h1><a class="toc-backref" href="#id14">Dependencies</a></h1>
 <p>useless is split into multiple packages, each dependent on different packages.</p>
+<div class="section" id="id1">
+<h2><a class="toc-backref" href="#id15">base</a></h2>
+<ul class="simple">
+<li>python-xml</li>
+<li>python-pycurl</li>
+</ul>
+</div>
+<div class="section" id="id2">
+<h2><a class="toc-backref" href="#id16">db</a></h2>
+<ul class="simple">
+<li>python-useless-sqlgen</li>
+<li>python-sqlite</li>
+</ul>
+</div>
+<div class="section" id="id3">
+<h2><a class="toc-backref" href="#id17">kdebase</a></h2>
+<ul class="simple">
+<li>python-useless-base</li>
+<li>python-kde3</li>
+<li>python-qtext</li>
+</ul>
+</div>
+<div class="section" id="id4">
+<h2><a class="toc-backref" href="#id18">kdedb</a></h2>
+<ul class="simple">
+<li>python-useless-kdebase</li>
+<li>python-useless-db</li>
+<li>libqt3-mt-psql</li>
+</ul>
+</div>
+<div class="section" id="id5">
+<h2><a class="toc-backref" href="#id19">sqlgen</a></h2>
+<ul class="simple">
+<li>python-useless-base</li>
+<li>python-pgsql</li>
+</ul>
+</div>
 </div>
 <hr class="docutils" />
 <div class="section" id="intended-audience-users">
-<h1>Intended Audience/Users</h1>
+<h1><a class="toc-backref" href="#id20">Intended Audience/Users</a></h1>
 <p>Python developers who use <a class="reference external" href="http://www.postgresql.org">Postgresql</a> and/or <a class="reference external" href="http://www.riverbankcomputing.co.uk/pykde/index.php">PyKDE</a></p>
 </div>
 <hr class="docutils" />
 <div class="section" id="download">
-<h1>Download</h1>
+<h1><a class="toc-backref" href="#id21">Download</a></h1>
 <p>Currently the best way to obtain useless is through subversion:</p>
 <pre class="literal-block">
 svn checkout svn://svn.berlios.de/useless/trunk useless
@@ -354,17 +538,17 @@ although probably badly named.</p>
 </div>
 <hr class="docutils" />
 <div class="section" id="project">
-<h1>Project</h1>
+<h1><a class="toc-backref" href="#id22">Project</a></h1>
 <p><a class="reference external" href="http://developer.berlios.de/projects/useless">project</a> page</p>
 </div>
 <hr class="docutils" />
 <div class="section" id="documentation">
-<h1>Documentation</h1>
+<h1><a class="toc-backref" href="#id23">Documentation</a></h1>
 <p>The only documentation available so far, is in the code.  After installing,
 run pydoc -g to browse the api documentation.</p>
 </div>
 <div class="section" id="overhaul">
-<h1>Overhaul</h1>
+<h1><a class="toc-backref" href="#id24">Overhaul</a></h1>
 <p>There has been much progress in many areas in the python community that are
 making useless really useless.  The code is very likely to require python 2.5, mainly to
 use relative imports and make the packages easier to transport into other packages.  The
