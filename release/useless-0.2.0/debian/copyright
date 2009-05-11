@@ -1,0 +1,14 @@
+Public Domain
+This package was debianized by Joseph Rawson <umeboshi@gmail.com> on
+Tue, 24 May 2005 00:04:03 -0500.
+
+Copyright Holder: nobody
+
+License:
+
+none
+
+
+useless/base/forgethtml.py:
+	written by Stian Soiland <stain@nvg.org> 2001-2003, and is LGPL
+	see /usr/share/common-licenses/LGPL

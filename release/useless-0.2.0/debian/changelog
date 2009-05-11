@@ -1,0 +1,217 @@
+useless (0.2.0) unstable; urgency=low
+
+  * New Release
+
+ -- Joseph Rawson (new email) <umeboshi3@gmail.com>  Sat, 09 May 2009 14:01:29 -0500
+
+useless (0.1.19) unstable; urgency=low
+
+  * refer to common lgpl in debian/copyright
+  * capitalize python/kde/pykde in description to make lintian happy
+  * remove debian/useless.doc-base.EX
+  * lintian is now happy :)
+
+ -- Joseph Rawson (new email) <umeboshi3@gmail.com>  Wed, 22 Apr 2009 21:49:55 -0500
+
+useless (0.1.18) unstable; urgency=low
+
+  * fix arch=all instead of any in debian/control
+  * remove build of useless-docs package
+
+ -- Joseph Rawson (new email) <umeboshi3@gmail.com>  Wed, 22 Apr 2009 21:20:29 -0500
+
+useless (0.1.17) unstable; urgency=low
+
+  * new public release
+
+ -- Joseph Rawson (new email) <umeboshi3@gmail.com>  Sat, 18 Oct 2008 08:59:43 -0500
+
+useless (0.1.16) unstable; urgency=low
+
+  * update regex to scan for colons in templates
+
+ -- Joseph Rawson (new email) <umeboshi3@gmail.com>  Wed, 24 Sep 2008 17:19:24 -0500
+
+useless (0.1.15) unstable; urgency=low
+
+  * removing some more unused modules from kdedb
+
+ -- Joseph Rawson (new email) <umeboshi3@gmail.com>  Wed, 24 Sep 2008 16:21:23 -0500
+
+useless (0.1.14) unstable; urgency=low
+
+  * removed webframe package
+
+ -- Joseph Rawson (new email) <umeboshi3@gmail.com>  Wed, 24 Sep 2008 15:49:09 -0500
+
+useless (0.1.13) unstable; urgency=low
+
+  * added sep argument to Environment class, shouldn't have
+  been using the '_' in the first place.  I will probably be using
+  the ':' in the future in paella.
+  * performed another massive cleanup of old code
+  * removing the xmlgen package, as it's not being used anymore
+  
+
+ -- Joseph Rawson (new email) <umeboshi3@gmail.com>  Wed, 24 Sep 2008 15:28:28 -0500
+
+useless (0.1.12) unstable; urgency=low
+
+  * nothing really new, just got rid of old code, and added apidocs
+
+ -- Joseph Rawson <umeboshi3@gmail.com>  Tue, 16 Sep 2008 10:55:16 -0500
+
+useless (0.1.11) unstable; urgency=low
+
+  * bugfix, insert and update NULL values instead of "None" strings
+
+ -- Joseph Rawson <umeboshi3@gmail.com>  Mon, 15 Sep 2008 09:24:57 -0500
+
+useless (0.1.10) unstable; urgency=low
+
+  * added simple gpg interface to useless.base.util
+  
+
+ -- Joseph Rawson <umeboshi3@gmail.com>  Thu, 21 Aug 2008 12:24:46 -0500
+
+useless (0.1.9) unstable; urgency=low
+
+  * moving to etch
+  * moving to unstable
+
+ -- Joseph Rawson <umeboshi3@gmail.com>  Fri, 15 Aug 2008 13:33:41 -0500
+
+useless (0.1.8) common; urgency=low
+
+  * releasing with new webframe package
+
+ -- Joseph Rawson <umeboshi@gregscomputerservice.com>  Tue, 18 Apr 2006 12:56:40 -0500
+
+useless (0.1.7) common; urgency=low
+
+  * one more depends fix for useless-kdb (libqt3-mt-psql or libqt3c102-mt-psql)
+  * added webframe package
+
+ -- Joseph Rawson <umeboshi@gregscomputerservice.com>  Tue, 18 Apr 2006 12:54:01 -0500
+
+useless (0.1.6) common; urgency=low
+
+  * added shorewall module
+  * reimplemented booleans in Configuration (closer to ConfigParser module)
+
+ -- Joseph Rawson <umeboshi@gregscomputerservice.com>  Mon, 27 Feb 2006 14:10:01 -0600
+
+useless (0.1.5) common; urgency=low
+
+  * useless-kbase now depends on libqt3-mt-psql
+  
+
+ -- Joseph Rawson <umeboshi@gregscomputerservice.com>  Fri, 10 Feb 2006 21:17:42 -0600
+
+useless (0.1.4) common; urgency=low
+
+  * added daemon module to useless-base
+
+ -- Joseph Rawson <umeboshi@gregscomputerservice.com>  Tue,  7 Feb 2006 19:14:43 -0600
+
+useless (0.1.3) common; urgency=low
+
+  * incrementing version for first release on berlios
+
+
+ -- Joseph Rawson <umeboshi@gregscomputerservice.com>  Thu, 11 Aug 2005 12:13:59 -0500
+
+useless (0.1.2) common; urgency=low
+
+  * new Configuration object, better check for sqlite cursor in BasicConnection
+
+
+ -- Joseph Rawson <umeboshi@gregscomputerservice.com>  Tue, 26 Jul 2005 12:55:33 -0500
+
+useless (0.1.1) common; urgency=low
+
+  * building with cdbs now
+
+
+ -- Joseph Rawson <umeboshi@gregscomputerservice.com>  Tue, 19 Jul 2005 11:53:46 -0500
+
+useless (0.1.0) common; urgency=low
+
+  * removing debian revision from version
+
+
+ -- Joseph Rawson <umeboshi@gregscomputerservice.com>  Tue, 19 Jul 2005 11:53:13 -0500
+
+useless (0.1-11) common; urgency=low
+
+  * haven't been paying attention to email address
+
+
+ -- Joseph Rawson <umeboshi@gregscomputerservice.com>  Sun, 17 Jul 2005 22:40:12 -0500
+
+useless (0.1-10) common; urgency=low
+
+  * added true/false detection to base config object
+
+ -- Joseph Rawson <umeboshi@gregscomputerservice.com>  Fri, 15 Jul 2005 14:46:25 -0500
+
+useless (0.1-9) common; urgency=low
+
+  * added Depends for python-sqlite
+  
+
+ -- Joseph Rawson <umeboshi@gregscomputerservice.com>  Wed,  6 Jul 2005 15:57:50 -0500
+
+useless (0.1-8) common; urgency=low
+
+  * added Depends for python2.3-pycurl
+  
+
+ -- Joseph Rawson <umeboshi@gregscomputerservice.com>  Wed,  6 Jul 2005 15:49:05 -0500
+
+useless (0.1-7) common; urgency=low
+
+  * updated dependencies for useless kde packages
+  
+
+ -- Joseph Rawson <umeboshi@gregscomputerservice.com>  Sat,  2 Jul 2005 12:59:41 -0500
+
+useless (0.1-6) common; urgency=low
+
+  * oops small bug fix in new pipe templates
+
+ -- Joseph Rawson <umeboshi@gregscomputerservice.com>  Fri, 24 Jun 2005 19:04:54 -0500
+
+useless (0.1-5) common; urgency=low
+
+  * adding pipe templates
+  
+
+ -- Joseph Rawson <umeboshi@gregscomputerservice.com>  Fri, 24 Jun 2005 18:46:56 -0500
+
+useless (0.1-4) common; urgency=low
+
+  * fixed a typo in kdb/gui.py
+  * ready for packaging
+  
+
+ -- Joseph Rawson <umeboshi@gregscomputerservice.com>  Tue, 21 Jun 2005 15:23:23 -0500
+
+useless (0.1-3) common; urgency=low
+
+  * a small bugfix for highlevel db module
+
+ -- Joseph Rawson <umeboshi@gregscomputerservice.com>  Tue, 14 Jun 2005 17:49:47 -0500
+
+useless (0.1-2) common; urgency=low
+
+  * moving to common
+
+ -- Joseph Rawson <umeboshi@gregscomputerservice.com>  Tue, 14 Jun 2005 10:43:28 -0500
+
+useless (0.1-1) unstable; urgency=low
+
+  * Initial release
+
+ -- Joseph Rawson <umeboshi@gregscomputerservice.com>  Tue, 24 May 2005 00:04:03 -0500
+

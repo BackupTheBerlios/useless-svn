@@ -1,0 +1,36 @@
+#!/usr/bin/make -f
+DEB_PYTHON_SYSTEM=pysupport
+include /usr/share/cdbs/1/rules/debhelper.mk
+include /usr/share/cdbs/1/class/python-distutils.mk
+
+prefix=$(CURDIR)/debian/$(cdbs_curpkg)/usr
+install/python-useless-base::
+	python setup.py base install --prefix=$(prefix)
+	rm -r build/
+install/python-useless-sqlgen::
+	python setup.py sqlgen install --prefix=$(prefix)
+	rm -r build/
+install/python-useless-db::
+	python setup.py db install --prefix=$(prefix)
+	rm -r build/
+install/python-useless-kdebase::
+	python setup.py kdebase install --prefix=$(prefix)
+	rm -r build/
+install/python-useless-kdedb::
+	python setup.py kdedb install --prefix=$(prefix)
+	rm -r build/
+install/python-useless-debian::
+	python setup.py debian install --prefix=$(prefix)
+	rm -r build/
+build-docs: build-docs-stamp
+build-docs-stamp:
+	epydoc useless
+	touch build-docs-stamp
+build/useless-doc:: build-docs
+
+clean::
+	dh_clean `find -path *.pyc`
+	dh_clean `find -path *~`
+	rm html -fr
+	dh_clean configure-stamp
+	dh_clean build-docs-stamp

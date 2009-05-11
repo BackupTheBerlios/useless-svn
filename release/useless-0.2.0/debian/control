@@ -1,0 +1,70 @@
+Source: useless
+Section: python
+Priority: optional
+Maintainer: Joseph Rawson (new email) <umeboshi3@gmail.com>
+Build-Depends: debhelper (>= 4.2.0), debhelper (>= 5.0.37.2), cdbs (>= 0.4.43), python-all-dev (>= 2.3.5-11), python-support (>= 0.3.2), python-dev
+Standards-Version: 3.8.0
+
+Package: python-useless-base
+Section: python
+Priority: optional
+Architecture: all
+Depends: python-xml, python-pycurl, ${python:Depends}
+Provides: ${python:Provides}
+Description: base package for python-useless packages
+ This package contains modules that are used by other python-useless packages.
+ In this package are modules for handling config files, and modules for small
+ generic functions that can be used elsewhere, but have nowhere else to go.
+
+Package: python-useless-db
+Section: python
+Priority: optional
+Architecture: all
+Depends: python-useless-sqlgen, python-sqlite, ${python:Depends}
+Provides: ${python:Provides}
+Description:  Database access package
+ This package is useful for accessing sql databases with a higher level
+ wrapper than the standard db2.0 Python cursors.  Postgres is currently the
+ only database that is supported, although there is limited support for SQLite
+ databases.
+
+Package: python-useless-sqlgen
+Section: python
+Priority: optional
+Architecture: all
+Depends: python-useless-base, python-pgsql, ${python:Depends}
+Provides: ${python:Provides}
+Description: sql statement helper
+ This package is designed to make it easier to form sql statements by 
+ making Python objects.  The modules in this package range from being 
+ simple to very complex, though not that complex yet.  There is support 
+ for generating plpgsql functions, though its still limited and simple.  There 
+ is no requirement to use the more complex parts of the package, but 
+ there are times when doing so will make the development easier.  The 
+ simple statement classes should be very portable to other databases, 
+ but the more complex ones are more geared towards postgres.  The 
+ python-pgsql dependency is only there because the quote function is 
+ used from it.  A pure Python replacement function would be required to 
+ drop that dependency.
+
+Package: python-useless-kdebase
+Section: python
+Priority: optional
+Architecture: all
+Depends: python-useless-base, python-kde3, python-qtext, ${python:Depends}
+Provides: ${python:Provides}
+Description: useless PyKDE widgets
+ these are simple modules for simple application development.  This
+ code is young, and probably really useless.
+
+Package: python-useless-kdedb
+Section: python
+Priority: optional
+Architecture: all
+Depends: python-useless-kdebase, python-useless-db, libqt3-mt-psql | libqt3c102-mt-psql, ${python:Depends}
+Provides: ${python:Provides}
+Description: useless PyKDE database widgets
+ these are some very simple hacky db widgets for PyKDE.  if you are
+ interested in this, you can probably find something better somewhere
+ else.
+
