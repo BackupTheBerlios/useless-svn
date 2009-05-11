@@ -230,7 +230,7 @@ Currently the best way to obtain useless is through subversion::
 
 svn_ access (This will work in konqueror.)
 
-There is also a tarball_ of the source available, thought it might be 
+There is also a tarball_ of the source available, although it might be 
 out of date.  Useless doesn't change too much, and the api is pretty stable,
 although probably badly named.
 
